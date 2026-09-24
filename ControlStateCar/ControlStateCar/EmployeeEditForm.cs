@@ -88,5 +88,16 @@ namespace ControlStateCar
         {
             this.Close();
         }
+
+        private void EmployeeEditForm_Load(object sender, EventArgs e)
+        {
+            //if (Session.Role != Role.Admin.ToString())
+            //{
+            //    MessageBox.Show("Недостаточно прав для выполнения операции.", "Ошибка доступа",
+            //                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            //    this.DialogResult = DialogResult.Abort;
+            //    this.Close();
+            //}
+        }
     }
 }

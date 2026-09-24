@@ -141,7 +141,7 @@
             this.lblPhone.AutoSize = true;
             this.lblPhone.Location = new System.Drawing.Point(20, 240);
             this.lblPhone.Name = "lblPhone";
-            this.lblPhone.Size = new System.Drawing.Size(155, 13);
+            this.lblPhone.Size = new System.Drawing.Size(164, 13);
             this.lblPhone.TabIndex = 13;
             this.lblPhone.Text = "Телефон (+7 (XXX) XXX-XX-XX):";
             // 
@@ -205,9 +205,11 @@
             this.Name = "EmployeeEditForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Регистрация сотрудника";
+            this.Load += new System.EventHandler(this.EmployeeEditForm_Load);
             ((System.ComponentModel.ISupportInitialize)(this.errorProvider)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
+
         }
     }
 }
