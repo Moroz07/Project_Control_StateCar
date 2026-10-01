@@ -40,7 +40,7 @@ namespace ControlStateCar
 
         private void btnLogout_Click(object sender, EventArgs e)
         {
-            this.Close();
+            Close();
         }
     }
 }

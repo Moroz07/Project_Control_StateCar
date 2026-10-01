@@ -44,8 +44,8 @@ namespace ControlStateCar
 
             if (authService_.Authorize(login, password, out string errorMessage))
             {
-                this.DialogResult = DialogResult.OK;
-                this.Close();
+               DialogResult = DialogResult.OK;
+               Close();
             }
             else
             {
