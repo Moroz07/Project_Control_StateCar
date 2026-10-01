@@ -1,25 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace ControlStateCar
 {
     public partial class LoginForm : Form
     {
-        private  AuthService _authService;
-        private  UserValidator _validator;
+        private AuthService _authService;
+        private UserValidator _validator;
+        private IUserRepository _userRepository;
 
-        public LoginForm(AuthService authService, UserValidator validator)
+        public LoginForm(AuthService authService, UserValidator validator, IUserRepository userRepository)
         {
             InitializeComponent();
             _authService = authService;
             _validator = validator;
+            _userRepository = userRepository;
         }
 
         private void btnLogin_Click(object sender, EventArgs e)
@@ -44,7 +39,7 @@ namespace ControlStateCar
 
             if (user != null)
             {
-                ProfileForm profileForm = new ProfileForm(user, null, _validator);
+                ProfileForm profileForm = new ProfileForm(user, _userRepository, _validator);
 
                 profileForm.FormClosed += (s, args) => this.Close();
 
@@ -58,4 +53,3 @@ namespace ControlStateCar
         }
     }
 }
-
