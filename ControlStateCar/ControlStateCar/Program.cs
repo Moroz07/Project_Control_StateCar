@@ -14,33 +14,13 @@ namespace ControlStateCar
         [STAThread]
         static void Main()
         {
+            var IUserRepository = new DBConnection();
+            var userValidator = new UserValidator();
+            var authService = new AuthService(IUserRepository);
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-
-            string connectionString = "Host=localhost;Port=5432;Database=CompanyDB;Username=postgres;Password=123456;";
-
-            IUserRepository userRepository = new DBConnection(connectionString);
-            UserValidator validator = new UserValidator();
-            AuthService authService = new AuthService(userRepository);
-            
-
-            while (true)
-            {
-                using (var loginForm = new LoginForm(authService, validator))
-                {
-                    if (loginForm.ShowDialog() != DialogResult.OK)
-                    {
-                        break;
-                    }
-                }
-
-                using (var profileForm = new ProfileForm(userRepository, validator))
-                {
-                    profileForm.ShowDialog();
-                }
-
-                Session.EndSession();
-            }
+            Application.Run(new LoginForm(authService, userValidator));
         }
     }
 }

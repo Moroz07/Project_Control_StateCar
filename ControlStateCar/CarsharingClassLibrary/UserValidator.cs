@@ -47,29 +47,21 @@ namespace ControlStateCar
             return digits == 11;
         }
 
-        public bool ValidateRole(Role role)
+        public bool ValidateRole(User u)
         {
-            return role == Role.admin || role == Role.employee;
+            return u != null && (u.Role == Role.администратор || u.Role == Role.техник);
         }
 
         public bool ValidateAll(User user)
         {
             if (user == null) return false;
 
-            Role parsedRole;
-            if (user.Role == "admin")
-                parsedRole = Role.admin;
-            else if (user.Role == "employee")
-                parsedRole = Role.employee;
-            else
-                return false;
-
             return ValidateLogin(user.Login) &&
                    ValidatePassword(user.Password) &&
                    ValidateFullName(user.FullName) &&
                    ValidateEmail(user.Email) &&
                    ValidatePhone(user.Phone) &&
-                   ValidateRole(parsedRole);
+                   ValidateRole(user);
         }
     }
 }

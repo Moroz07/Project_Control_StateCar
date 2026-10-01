@@ -15,6 +15,12 @@ namespace ControlStateCar
             userRepository_ = userRepository;
         }
 
+        public bool ValidateCredentials(string login, string password)
+        {
+            string errorMessage;
+            return ValidateCredentials(login, password, out errorMessage);
+        }
+
         public bool ValidateCredentials(string login, string password, out string errorMessage)
         {
             errorMessage = string.Empty;
@@ -38,17 +44,38 @@ namespace ControlStateCar
         public string GetUserRole(string login)
         {
             User user = userRepository_.FindByLogin(login);
-            return user?.Role;
+            if (user != null)
+            {
+                return user.Role.ToString();
+            }
+            return null;
         }
 
         public bool Authorize(string login, string password, out string errorMessage)
         {
             if (!ValidateCredentials(login, password, out errorMessage))
                 return false;
-
-            string role = GetUserRole(login);
-            Session.CreateSession(login, role);
             return true;
+        }
+
+        public User Login(string login, string password, out string errorMessage)
+        {
+            errorMessage = string.Empty;
+            User user = userRepository_.FindByLogin(login);
+
+            if (user == null)
+            {
+                errorMessage = "Пользователь с таким логином не найден.";
+                return null;
+            }
+
+            if (!user.CheckPassword(password))
+            {
+                errorMessage = "Неверный пароль.";
+                return null;
+            }
+
+            return user;
         }
     }
 }
