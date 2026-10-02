@@ -22,12 +22,6 @@ namespace ControlStateCar
         {
             errorProvider.Clear();
 
-            if (cmbRole.SelectedItem == null)
-            {
-                errorProvider.SetError(cmbRole, "Выберите роль сотрудника");
-                return;
-            }
-
             Role selectedRole = (Role)cmbRole.SelectedItem;
 
             var user = new User

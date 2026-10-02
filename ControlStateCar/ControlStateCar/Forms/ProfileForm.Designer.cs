@@ -18,6 +18,7 @@
 
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ProfileForm));
             this.lblUserInfo = new System.Windows.Forms.Label();
             this.btnRegisterEmployee = new System.Windows.Forms.Button();
             this.btnLogout = new System.Windows.Forms.Button();
@@ -62,6 +63,7 @@
             this.Controls.Add(this.btnRegisterEmployee);
             this.Controls.Add(this.lblUserInfo);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.Name = "ProfileForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;

@@ -26,7 +26,7 @@ namespace TAuthorization
             };
 
             var mock = new Mock<IUserRepository>();
-            mock.Setup(repo => repo.AddUser(It.IsAny<User>())).Returns(true);
+            mock.Setup(repo => repo.AddUser(user)).Returns(true);
 
             IUserRepository repository = mock.Object;
             bool result = repository.AddUser(user);
@@ -35,7 +35,7 @@ namespace TAuthorization
             Assert.AreEqual(Role.техник, user.Role);
         }
 
-  
+
 
         // занятый логин → false
         [TestMethod]
