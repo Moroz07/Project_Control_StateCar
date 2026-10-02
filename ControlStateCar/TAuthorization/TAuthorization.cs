@@ -5,7 +5,7 @@ using ControlStateCar;
 namespace TAuthorization
 {
     [TestClass]
-    public class UnitTest1
+    public class TAuthorization
     {
         // 1. Успешная проверка (верная пара логин/пароль)
         [TestMethod]

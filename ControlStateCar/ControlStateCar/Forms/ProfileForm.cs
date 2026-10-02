@@ -50,10 +50,10 @@ namespace ControlStateCar
 
         private void btnRegisterEmployee_Click(object sender, EventArgs e)
         {
-            // using (var regForm = new EmployeeEditForm(_userRepository, _validator))
-            // {
-            //     regForm.ShowDialog();
-            // }
+            using (var regForm = new EmployeeEditForm(_userRepository, _validator))
+            {
+                regForm.ShowDialog();
+            }
         }
 
         private void btnLogout_Click(object sender, EventArgs e)
