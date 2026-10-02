@@ -91,7 +91,7 @@ namespace ControlStateCar
 
             if (userRepository_.AddUser(user))
             {
-                MessageBox.Show("Сотрудник успешно добавлен.", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Сотрудник успешно добавлен.", "Успех", MessageBoxButtons.OK);
                 DialogResult = DialogResult.OK;
                 Close();
             }

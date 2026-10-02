@@ -5,7 +5,7 @@ namespace ControlStateCar
 {
     public class DBConnection : IUserRepository
     {
-        private const string connectionString_ = "Host=localhost;Port=5432;Database=CompanyDB;Username=postgres;Password=123456";
+        private const string connectionString_ = "Host=192.168.1.48;Port=5432;Database=CompanyDB;Username=st403-7;Password=4037";
 
         public bool AddUser(User user)
         {
