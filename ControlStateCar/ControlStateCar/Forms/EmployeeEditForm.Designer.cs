@@ -206,7 +206,6 @@
             this.Name = "EmployeeEditForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Регистрация сотрудника";
-            this.Load += new System.EventHandler(this.EmployeeEditForm_Load);
             ((System.ComponentModel.ISupportInitialize)(this.errorProvider)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();

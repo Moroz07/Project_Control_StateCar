@@ -6,10 +6,10 @@ namespace ControlStateCar
     public partial class ProfileForm : Form
     {
         private User _currentUser;
-        private IUserRepository _userRepository;
+        private IDBConnection _userRepository;
         private UserValidator _validator;
 
-        public ProfileForm(User user, IUserRepository userRepository = null, UserValidator validator = null)
+        public ProfileForm(User user, IDBConnection userRepository = null, UserValidator validator = null)
         {
             InitializeComponent();
             _currentUser = user;

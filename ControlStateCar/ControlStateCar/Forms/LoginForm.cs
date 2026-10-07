@@ -7,9 +7,9 @@ namespace ControlStateCar
     {
         private AuthService _authService;
         private UserValidator _validator;
-        private IUserRepository _userRepository;
+        private IDBConnection _userRepository;
 
-        public LoginForm(AuthService authService, UserValidator validator, IUserRepository userRepository)
+        public LoginForm(AuthService authService, UserValidator validator, IDBConnection userRepository)
         {
             InitializeComponent();
             _authService = authService;
