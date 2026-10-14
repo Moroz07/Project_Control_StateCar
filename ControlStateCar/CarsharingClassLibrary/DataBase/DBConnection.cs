@@ -3,7 +3,7 @@ using System;
 
 namespace ControlStateCar
 {
-    public class DBConnection : IUserRepository
+    public class DBConnection : IDBConnection
     {
         private const string connectionString_ = "Host=localhost;Port=5432;Database=CompanyDB;Username=postgres;Password=123456";
 

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ControlStateCar
 {
-    public interface IUserRepository
+    public interface IDBConnection
     {
         bool CheckIfLoginExists(string login);
         bool AddUser(User user);

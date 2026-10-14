@@ -8,9 +8,9 @@ namespace ControlStateCar
 {
     public class AuthService
     {
-        private IUserRepository userRepository_;
+        private IDBConnection userRepository_;
 
-        public AuthService(IUserRepository userRepository)
+        public AuthService(IDBConnection userRepository)
         {
             userRepository_ = userRepository;
         }

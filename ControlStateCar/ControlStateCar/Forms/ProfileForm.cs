@@ -6,10 +6,10 @@ namespace ControlStateCar
     public partial class ProfileForm : Form
     {
         private User _currentUser;
-        private IUserRepository _userRepository;
+        private IDBConnection _userRepository;
         private UserValidator _validator;
 
-        public ProfileForm(User user, IUserRepository userRepository = null, UserValidator validator = null)
+        public ProfileForm(User user, IDBConnection userRepository = null, UserValidator validator = null)
         {
             InitializeComponent();
             _currentUser = user;
@@ -50,10 +50,10 @@ namespace ControlStateCar
 
         private void btnRegisterEmployee_Click(object sender, EventArgs e)
         {
-            // using (var regForm = new EmployeeEditForm(_userRepository, _validator))
-            // {
-            //     regForm.ShowDialog();
-            // }
+            using (var regForm = new EmployeeEditForm(_userRepository, _validator))
+            {
+                regForm.ShowDialog();
+            }
         }
 
         private void btnLogout_Click(object sender, EventArgs e)

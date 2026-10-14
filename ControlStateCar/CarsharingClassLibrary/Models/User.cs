@@ -16,11 +16,6 @@ namespace ControlStateCar
         public string Email { get; set; }
         public string Phone { get; set; }
 
-        public string GetEmployeeInfo()
-        {
-            return $"{FullName} | Роль: {Convert.ToString(Role)} | Логин: {Login}";
-        }
-
         public bool CheckPassword(string password) => Password == password;
     }
 }

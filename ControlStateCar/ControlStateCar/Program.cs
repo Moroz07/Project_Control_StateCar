@@ -20,7 +20,7 @@ namespace ControlStateCar
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new LoginForm(authService, userValidator));
+            Application.Run(new LoginForm(authService, userValidator, IUserRepository));
         }
     }
 }
