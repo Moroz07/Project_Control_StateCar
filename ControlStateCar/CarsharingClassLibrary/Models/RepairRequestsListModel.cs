@@ -10,7 +10,8 @@ namespace ControlStateCar
         public List<RepairRequest> Requests { get; set; }
         public int TotalCount => Requests?.Count ?? 0;
 
-        public RepairRequestsListModel(IRepairRequestRepository repository, User currentUser)
+        // Универсальный конструктор с необязательным пользователем, чтобы не было ошибок CS7036
+        public RepairRequestsListModel(IRepairRequestRepository repository, User currentUser = null)
         {
             _repository = repository;
             _currentUser = currentUser;
@@ -25,7 +26,8 @@ namespace ControlStateCar
             }
             else
             {
-                Requests = new List<RepairRequest>();
+                // Если пользователь не передан, грузим как администратор (все заявки)
+                Requests = _repository.GetRecentRepairRequests(Role.администратор, string.Empty, count);
             }
         }
 
