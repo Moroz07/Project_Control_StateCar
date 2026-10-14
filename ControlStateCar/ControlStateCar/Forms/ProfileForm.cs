@@ -60,5 +60,16 @@ namespace ControlStateCar
         {
             Close();
         }
+
+        private void btnRepairRequests_Click(object sender, EventArgs e)
+        {
+            var repo = new RepairRequestRepository();
+            var model = new RepairRequestsListModel(repo, _currentUser);
+
+            using (var form = new RepairRequestsForm(model, _currentUser))
+            {
+                form.ShowDialog();
+            }
+        }
     }
 }

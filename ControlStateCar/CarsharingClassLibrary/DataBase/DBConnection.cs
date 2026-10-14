@@ -5,7 +5,7 @@ namespace ControlStateCar
 {
     public class DBConnection : IDBConnection
     {
-        private const string connectionString_ = "Host=localhost;Port=5432;Database=CompanyDB;Username=postgres;Password=123456";
+        public const string connectionString_ = "Host=localhost;Port=5432;Database=CompanyDB;Username=postgres;Password=123456";
 
         public bool AddUser(User user)
         {
