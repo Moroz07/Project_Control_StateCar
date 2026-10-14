@@ -14,7 +14,7 @@ namespace ControlStateCar
                 using (var connection = new NpgsqlConnection(connectionString_))
                 {
                     connection.Open();
-                    string query = @"INSERT INTO users (login, password, role, full_name, email, phone) 
+                    string query = @"INSERT INTO employees (login, password_hash, role, full_name, email, phone) 
                                      VALUES (@login, @password, @role, @full_name, @email, @phone)";
 
                     using (var command = new NpgsqlCommand(query, connection))
@@ -47,7 +47,7 @@ namespace ControlStateCar
                 using (var connection = new NpgsqlConnection(connectionString_))
                 {
                     connection.Open();
-                    string query = "SELECT COUNT(1) FROM users WHERE login = @login";
+                    string query = "SELECT COUNT(1) FROM employees WHERE login = @login";
 
                     using (var command = new NpgsqlCommand(query, connection))
                     {
@@ -70,7 +70,7 @@ namespace ControlStateCar
                 using (var connection = new NpgsqlConnection(connectionString_))
                 {
                     connection.Open();
-                    string query = "SELECT login, password, role, full_name, email, phone FROM users WHERE login = @login";
+                    string query = "SELECT login, password_hash, role, full_name, email, phone FROM employees WHERE login = @login";
 
                     using (var command = new NpgsqlCommand(query, connection))
                     {

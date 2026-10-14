@@ -9,8 +9,6 @@ namespace ControlStateCar
 
         public List<RepairRequest> Requests { get; set; }
         public int TotalCount => Requests?.Count ?? 0;
-
-        // Универсальный конструктор с необязательным пользователем, чтобы не было ошибок CS7036
         public RepairRequestsListModel(IRepairRequestRepository repository, User currentUser = null)
         {
             _repository = repository;
@@ -26,7 +24,6 @@ namespace ControlStateCar
             }
             else
             {
-                // Если пользователь не передан, грузим как администратор (все заявки)
                 Requests = _repository.GetRecentRepairRequests(Role.администратор, string.Empty, count);
             }
         }
@@ -48,6 +45,27 @@ namespace ControlStateCar
             else
             {
                 errorMessage = "Не удалось назначить техника в базе данных.";
+                return false;
+            }
+        }
+
+        public bool CancelRequest(int requestId, out string errorMessage)
+        {
+            if (_currentUser == null || string.IsNullOrEmpty(_currentUser.Login))
+            {
+                errorMessage = "Ошибка определения текущего пользователя.";
+                return false;
+            }
+
+            bool isSuccess = ((RepairRequestRepository)_repository).CancelRequest(requestId, _currentUser.Login);
+            if (isSuccess)
+            {
+                errorMessage = "";
+                return true;
+            }
+            else
+            {
+                errorMessage = "Не удалось отменить заявку. Убедитесь, что она назначена на вас.";
                 return false;
             }
         }

@@ -6,37 +6,35 @@ namespace ControlStateCar
 {
     public class RepairRequestRepository : IRepairRequestRepository
     {
-        private const string connectionString_ = "Host=localhost;Port=5432;Database=CompanyDB;Username=postgres;Password=123456";
-
         public List<RepairRequest> GetRecentRepairRequests(Role role, string userLogin, int count = 15)
         {
             var requests = new List<RepairRequest>();
 
             try
             {
-                using (var conn = new NpgsqlConnection(connectionString_))
+                using (var conn = new NpgsqlConnection(DBConnection.connectionString_))
                 {
                     conn.Open();
 
-                    // Если техник — выводим только его заявки. Если администратор — выводим все.
-                    string sql;
+                    string sql = @"
+                        SELECT 
+                            r.id, 
+                            COALESCE(v.brand, '') || ' ' || COALESCE(v.model, 'Автомобиль') AS car_name, 
+                            COALESCE(v.car_number, 'Без номера') AS car_number, 
+                            r.description, 
+                            r.status, 
+                            r.created_at, 
+                            COALESCE(e.login, 'Не назначен') AS technician_login 
+                        FROM repair_requests r
+                        LEFT JOIN vehicles v ON r.vehicle_id = v.id
+                        LEFT JOIN employees e ON r.employee_id = e.id";
+
                     if (role == Role.техник)
                     {
-                        sql = @"
-                            SELECT id, car_name, car_number, description, status, created_at, technician_login 
-                            FROM repair_requests 
-                            WHERE technician_login = @technicianLogin
-                            ORDER BY created_at DESC 
-                            LIMIT @count";
+                        sql += " WHERE e.login = @technicianLogin";
                     }
-                    else
-                    {
-                        sql = @"
-                            SELECT id, car_name, car_number, description, status, created_at, technician_login 
-                            FROM repair_requests 
-                            ORDER BY created_at DESC 
-                            LIMIT @count";
-                    }
+
+                    sql += " ORDER BY r.created_at DESC LIMIT @count";
 
                     using (var cmd = new NpgsqlCommand(sql, conn))
                     {
@@ -59,19 +57,29 @@ namespace ControlStateCar
                                     Description = reader.GetString(3)
                                 };
 
-                                string rawStatus = reader.GetString(4).Replace(" ", "_");
-                                RepairStatus parsedStatus;
-                                if (Enum.TryParse(rawStatus, true, out parsedStatus))
+                                // Маппинг английских статусов из базы в наш Enum
+                                string dbStatus = reader.GetString(4).ToLower();
+                                switch (dbStatus)
                                 {
-                                    request.Status = parsedStatus;
-                                }
-                                else
-                                {
-                                    request.Status = RepairStatus.новый;
+                                    case "open":
+                                        request.Status = RepairStatus.новый;
+                                        break;
+                                    case "in_progress":
+                                        request.Status = RepairStatus.в_работе;
+                                        break;
+                                    case "closed":
+                                        request.Status = RepairStatus.завершён;
+                                        break;
+                                    case "cancelled":
+                                        request.Status = RepairStatus.отменена;
+                                        break;
+                                    default:
+                                        request.Status = RepairStatus.новый;
+                                        break;
                                 }
 
                                 request.CreatedAt = reader.GetDateTime(5);
-                                request.TechnicianLogin = reader.IsDBNull(6) ? "Не назначен" : reader.GetString(6);
+                                request.TechnicianLogin = reader.GetString(6);
 
                                 requests.Add(request);
                             }
@@ -91,18 +99,66 @@ namespace ControlStateCar
         {
             try
             {
-                using (var conn = new NpgsqlConnection(connectionString_))
+                using (var conn = new NpgsqlConnection(DBConnection.connectionString_))
                 {
                     conn.Open();
+                    string getEmpIdSql = "SELECT id FROM employees WHERE login = @login";
+                    int employeeId = 0;
+
+                    using (var cmdEmp = new NpgsqlCommand(getEmpIdSql, conn))
+                    {
+                        cmdEmp.Parameters.AddWithValue("@login", technicianLogin);
+                        var result = cmdEmp.ExecuteScalar();
+                        if (result != null)
+                        {
+                            employeeId = Convert.ToInt32(result);
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+
+                    // При назначении меняем статус на английский 'in_progress' (согласно ограничениям БД)
                     string sql = @"
                         UPDATE repair_requests 
-                        SET technician_login = @technicianLogin, status = 'в_работе' 
+                        SET employee_id = @employeeId, status = 'in_progress' 
                         WHERE id = @requestid";
 
                     using (var cmd = new NpgsqlCommand(sql, conn))
                     {
-                        cmd.Parameters.AddWithValue("@technicianLogin", technicianLogin);
+                        cmd.Parameters.AddWithValue("@employeeId", employeeId);
                         cmd.Parameters.AddWithValue("@requestid", requestId);
+
+                        int affectedRows = cmd.ExecuteNonQuery();
+                        return affectedRows > 0;
+                    }
+                }
+            }
+            catch (NpgsqlException)
+            {
+                return false;
+            }
+        }
+
+        public bool CancelRequest(int requestId, string technicianLogin)
+        {
+            try
+            {
+                using (var conn = new NpgsqlConnection(DBConnection.connectionString_))
+                {
+                    conn.Open();
+                    // Проверяем, что заявка действительно принадлежит этому технику и находится в работе
+                    string sql = @"
+                        UPDATE repair_requests 
+                        SET status = 'cancelled', closed_at = NOW() 
+                        WHERE id = @requestid 
+                          AND employee_id = (SELECT id FROM employees WHERE login = @login)";
+
+                    using (var cmd = new NpgsqlCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@requestid", requestId);
+                        cmd.Parameters.AddWithValue("@login", technicianLogin);
 
                         int affectedRows = cmd.ExecuteNonQuery();
                         return affectedRows > 0;

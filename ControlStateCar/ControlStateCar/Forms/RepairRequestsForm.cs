@@ -7,8 +7,8 @@ namespace ControlStateCar
 {
     public partial class RepairRequestsForm : Form
     {
-        private readonly RepairRequestsListModel _model;
-        private readonly User _currentUser;
+        private  RepairRequestsListModel _model;
+        private  User _currentUser;
 
         public RepairRequestsForm(RepairRequestsListModel model, User currentUser = null)
         {
@@ -24,6 +24,8 @@ namespace ControlStateCar
             {
                 cmbAssignTech.Visible = false;
                 btnAssign.Visible = false;
+
+                btnCancelRequest.Location = btnAssign.Location;
             }
         }
 
@@ -113,7 +115,7 @@ namespace ControlStateCar
                 using (var conn = new NpgsqlConnection(DBConnection.connectionString_))
                 {
                     conn.Open();
-                    string sql = "SELECT login FROM users WHERE role = 'техник' OR role = 'technician' ORDER BY full_name ASC";
+                    string sql = "SELECT login FROM employees WHERE role = 'техник' OR role = 'technician' ORDER BY full_name ASC";
                     using (var cmd = new NpgsqlCommand(sql, conn))
                     using (var reader = cmd.ExecuteReader())
                     {
@@ -126,7 +128,7 @@ namespace ControlStateCar
             }
             catch (Exception)
             {
-                
+
             }
 
             if (techLogins.Count > 0)
@@ -232,9 +234,46 @@ namespace ControlStateCar
             }
         }
 
+        private void btnCancelRequest_Click(object sender, EventArgs e)
+        {
+            if (dgvRequests.SelectedRows.Count == 0)
+            {
+                MessageBox.Show("Выберите заявку в таблице для отмены.", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var selectedRow = dgvRequests.SelectedRows[0];
+            var request = selectedRow.Tag as RepairRequest;
+
+            if (request == null)
+                return;
+
+            if (_currentUser != null && _currentUser.Role == Role.техник)
+            {
+                if (request.TechnicianLogin != _currentUser.Login)
+                {
+                    MessageBox.Show("Вы можете отменять только те заявки, которые назначены на вас.", "Доступ запрещен", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+            }
+
+            string errorMessage;
+            bool success = _model.CancelRequest(request.Id, out errorMessage);
+
+            if (success)
+            {
+                MessageBox.Show("Заявка успешно отменена.", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                LoadDefaultRequests();
+            }
+            else
+            {
+                MessageBox.Show(errorMessage, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
         private void btnApply_Click(object sender, EventArgs e)
         {
-           
+
         }
 
         private void btnReset_Click(object sender, EventArgs e)
@@ -242,7 +281,7 @@ namespace ControlStateCar
             txtCarNumber.Clear();
             cmbStatus.SelectedIndex = 0;
             txtTechnician.Clear();
-            dtpFilterDate.Checked = false; 
+            dtpFilterDate.Checked = false;
 
             LoadDefaultRequests();
         }

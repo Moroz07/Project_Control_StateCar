@@ -16,6 +16,7 @@
         private System.Windows.Forms.Button btnReset;
         private System.Windows.Forms.ComboBox cmbAssignTech;
         private System.Windows.Forms.Button btnAssign;
+        private System.Windows.Forms.Button btnCancelRequest;
         private System.Windows.Forms.DataGridView dgvRequests;
 
         protected override void Dispose(bool disposing)
@@ -42,6 +43,7 @@
             this.btnReset = new System.Windows.Forms.Button();
             this.cmbAssignTech = new System.Windows.Forms.ComboBox();
             this.btnAssign = new System.Windows.Forms.Button();
+            this.btnCancelRequest = new System.Windows.Forms.Button();
             this.dgvRequests = new System.Windows.Forms.DataGridView();
             this.pnlFilter.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvRequests)).BeginInit();
@@ -61,10 +63,11 @@
             this.pnlFilter.Controls.Add(this.lblCarNumber);
             this.pnlFilter.Controls.Add(this.cmbAssignTech);
             this.pnlFilter.Controls.Add(this.btnAssign);
+            this.pnlFilter.Controls.Add(this.btnCancelRequest);
             this.pnlFilter.Dock = System.Windows.Forms.DockStyle.Top;
             this.pnlFilter.Location = new System.Drawing.Point(0, 0);
             this.pnlFilter.Name = "pnlFilter";
-            this.pnlFilter.Size = new System.Drawing.Size(1020, 65);
+            this.pnlFilter.Size = new System.Drawing.Size(1050, 65);
             this.pnlFilter.TabIndex = 0;
             // 
             // lblCarNumber
@@ -80,13 +83,13 @@
             // 
             this.txtCarNumber.Location = new System.Drawing.Point(15, 28);
             this.txtCarNumber.Name = "txtCarNumber";
-            this.txtCarNumber.Size = new System.Drawing.Size(100, 20);
+            this.txtCarNumber.Size = new System.Drawing.Size(90, 20);
             this.txtCarNumber.TabIndex = 1;
             // 
             // lblStatus
             // 
             this.lblStatus.AutoSize = true;
-            this.lblStatus.Location = new System.Drawing.Point(125, 10);
+            this.lblStatus.Location = new System.Drawing.Point(115, 10);
             this.lblStatus.Name = "lblStatus";
             this.lblStatus.Size = new System.Drawing.Size(44, 13);
             this.lblStatus.TabIndex = 2;
@@ -96,7 +99,7 @@
             // 
             this.cmbStatus.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbStatus.FormattingEnabled = true;
-            this.cmbStatus.Location = new System.Drawing.Point(128, 27);
+            this.cmbStatus.Location = new System.Drawing.Point(118, 27);
             this.cmbStatus.Name = "cmbStatus";
             this.cmbStatus.Size = new System.Drawing.Size(100, 21);
             this.cmbStatus.TabIndex = 3;
@@ -104,7 +107,7 @@
             // lblTechnician
             // 
             this.lblTechnician.AutoSize = true;
-            this.lblTechnician.Location = new System.Drawing.Point(238, 10);
+            this.lblTechnician.Location = new System.Drawing.Point(228, 10);
             this.lblTechnician.Name = "lblTechnician";
             this.lblTechnician.Size = new System.Drawing.Size(46, 13);
             this.lblTechnician.TabIndex = 4;
@@ -112,15 +115,15 @@
             // 
             // txtTechnician
             // 
-            this.txtTechnician.Location = new System.Drawing.Point(241, 28);
+            this.txtTechnician.Location = new System.Drawing.Point(231, 28);
             this.txtTechnician.Name = "txtTechnician";
-            this.txtTechnician.Size = new System.Drawing.Size(100, 20);
+            this.txtTechnician.Size = new System.Drawing.Size(90, 20);
             this.txtTechnician.TabIndex = 5;
             // 
             // lblDate
             // 
             this.lblDate.AutoSize = true;
-            this.lblDate.Location = new System.Drawing.Point(351, 10);
+            this.lblDate.Location = new System.Drawing.Point(331, 10);
             this.lblDate.Name = "lblDate";
             this.lblDate.Size = new System.Drawing.Size(36, 13);
             this.lblDate.TabIndex = 6;
@@ -131,14 +134,14 @@
             this.dtpFilterDate.Format = System.Windows.Forms.DateTimePickerFormat.Short;
             this.dtpFilterDate.ShowCheckBox = true;
             this.dtpFilterDate.Checked = false;
-            this.dtpFilterDate.Location = new System.Drawing.Point(354, 28);
+            this.dtpFilterDate.Location = new System.Drawing.Point(334, 28);
             this.dtpFilterDate.Name = "dtpFilterDate";
-            this.dtpFilterDate.Size = new System.Drawing.Size(110, 20);
+            this.dtpFilterDate.Size = new System.Drawing.Size(100, 20);
             this.dtpFilterDate.TabIndex = 7;
             // 
             // btnApply
             // 
-            this.btnApply.Location = new System.Drawing.Point(475, 24);
+            this.btnApply.Location = new System.Drawing.Point(442, 24);
             this.btnApply.Name = "btnApply";
             this.btnApply.Size = new System.Drawing.Size(75, 27);
             this.btnApply.TabIndex = 8;
@@ -148,9 +151,9 @@
             // 
             // btnReset
             // 
-            this.btnReset.Location = new System.Drawing.Point(556, 24);
+            this.btnReset.Location = new System.Drawing.Point(523, 24);
             this.btnReset.Name = "btnReset";
-            this.btnReset.Size = new System.Drawing.Size(75, 27);
+            this.btnReset.Size = new System.Drawing.Size(70, 27);
             this.btnReset.TabIndex = 9;
             this.btnReset.Text = "Сбросить";
             this.btnReset.UseVisualStyleBackColor = true;
@@ -160,20 +163,30 @@
             // 
             this.cmbAssignTech.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cmbAssignTech.FormattingEnabled = true;
-            this.cmbAssignTech.Location = new System.Drawing.Point(660, 27);
+            this.cmbAssignTech.Location = new System.Drawing.Point(605, 27);
             this.cmbAssignTech.Name = "cmbAssignTech";
-            this.cmbAssignTech.Size = new System.Drawing.Size(140, 21);
+            this.cmbAssignTech.Size = new System.Drawing.Size(120, 21);
             this.cmbAssignTech.TabIndex = 10;
             // 
             // btnAssign
             // 
-            this.btnAssign.Location = new System.Drawing.Point(806, 24);
+            this.btnAssign.Location = new System.Drawing.Point(731, 24);
             this.btnAssign.Name = "btnAssign";
-            this.btnAssign.Size = new System.Drawing.Size(95, 27);
+            this.btnAssign.Size = new System.Drawing.Size(85, 27);
             this.btnAssign.TabIndex = 11;
             this.btnAssign.Text = "Назначить";
             this.btnAssign.UseVisualStyleBackColor = true;
             this.btnAssign.Click += new System.EventHandler(this.btnAssign_Click);
+            // 
+            // btnCancelRequest
+            // 
+            this.btnCancelRequest.Location = new System.Drawing.Point(822, 24);
+            this.btnCancelRequest.Name = "btnCancelRequest";
+            this.btnCancelRequest.Size = new System.Drawing.Size(110, 27);
+            this.btnCancelRequest.TabIndex = 12;
+            this.btnCancelRequest.Text = "Отменить заявку";
+            this.btnCancelRequest.UseVisualStyleBackColor = true;
+            this.btnCancelRequest.Click += new System.EventHandler(this.btnCancelRequest_Click);
             // 
             // dgvRequests
             // 
@@ -188,7 +201,7 @@
             this.dgvRequests.ReadOnly = true;
             this.dgvRequests.RowHeadersVisible = false;
             this.dgvRequests.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvRequests.Size = new System.Drawing.Size(1020, 415);
+            this.dgvRequests.Size = new System.Drawing.Size(1050, 415);
             this.dgvRequests.TabIndex = 1;
             this.dgvRequests.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvRequests_CellContentClick);
             // 
@@ -196,10 +209,10 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1020, 480);
+            this.ClientSize = new System.Drawing.Size(1050, 480);
             this.Controls.Add(this.dgvRequests);
             this.Controls.Add(this.pnlFilter);
-            this.MinimumSize = new System.Drawing.Size(800, 400);
+            this.MinimumSize = new System.Drawing.Size(850, 400);
             this.Name = "RepairRequestsForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Список заявок на ремонт";
@@ -208,6 +221,7 @@
             this.pnlFilter.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvRequests)).EndInit();
             this.ResumeLayout(false);
+
         }
     }
 }
