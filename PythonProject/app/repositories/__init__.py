@@ -1,0 +1,2 @@
+from app.repositories.base import IDiagnosticsRepository
+from app.repositories.diagnostics_repository import DiagnosticsRepository
