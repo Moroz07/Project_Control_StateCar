@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using ControlStateCar;
@@ -9,15 +8,14 @@ namespace TAuthorization
     [TestClass]
     public class TRepairRequests
     {
-        // 1. Успешная загрузка списка последних заявок
         [TestMethod]
         public void TestMethod_GetRecentRequests_Success()
         {
             var mock = new Mock<IRepairRequestRepository>();
             var sampleRequests = new List<RepairRequest>
             {
-                new RepairRequest { Id = 1, CarNumber = "А123ВС777", Status = RepairStatus.новый },
-                new RepairRequest { Id = 2, CarNumber = "В456ОР777", Status = RepairStatus.в_работе }
+                new RepairRequest { Id = 1, CarNumber = "A123BC77", Status = RepairStatus.New },
+                new RepairRequest { Id = 2, CarNumber = "B456OP77", Status = RepairStatus.InProgress }
             };
 
             mock.Setup(repo => repo.GetRecentRepairRequests(Role.администратор, "admin_petr", 15))
@@ -31,17 +29,16 @@ namespace TAuthorization
 
             Assert.IsNotNull(model.Requests);
             Assert.AreEqual(2, model.TotalCount);
-            Assert.AreEqual("А123ВС777", model.Requests[0].CarNumber);
+            Assert.AreEqual("A123BC77", model.Requests[0].CarNumber);
         }
 
-        // 2. Загрузка заявок для конкретного техника
         [TestMethod]
         public void TestMethod_GetRecentRequests_ForTechnician()
         {
             var mock = new Mock<IRepairRequestRepository>();
             var techRequests = new List<RepairRequest>
             {
-                new RepairRequest { Id = 2, CarNumber = "В456ОР777", Status = RepairStatus.в_работе, TechnicianLogin = "ivanov" }
+                new RepairRequest { Id = 2, CarNumber = "B456OP77", Status = RepairStatus.InProgress, TechnicianLogin = "ivanov" }
             };
 
             mock.Setup(repo => repo.GetRecentRepairRequests(Role.техник, "ivanov", 15))
@@ -57,7 +54,6 @@ namespace TAuthorization
             Assert.AreEqual("ivanov", model.Requests[0].TechnicianLogin);
         }
 
-        // 3. Успешное назначение техника
         [TestMethod]
         public void TestMethod_AssignTechnician_Success()
         {
@@ -68,14 +64,11 @@ namespace TAuthorization
             IRepairRequestRepository repository = mock.Object;
             var model = new RepairRequestsListModel(repository);
 
-            string errorMessage;
-            bool result = model.AssignTechnicianToRequest(1, "ivanov", out errorMessage);
+            string errorMessage = model.AssignTechnicianToRequest(1, "ivanov");
 
-            Assert.IsTrue(result);
             Assert.AreEqual(string.Empty, errorMessage);
         }
 
-        // 4. Ошибка при пустом логине техника
         [TestMethod]
         public void TestMethod_AssignTechnician_EmptyLogin()
         {
@@ -83,10 +76,8 @@ namespace TAuthorization
             IRepairRequestRepository repository = mock.Object;
             var model = new RepairRequestsListModel(repository);
 
-            string errorMessage;
-            bool result = model.AssignTechnicianToRequest(1, "", out errorMessage);
+            string errorMessage = model.AssignTechnicianToRequest(1, "");
 
-            Assert.IsFalse(result);
             Assert.AreEqual("Выберите техника из списка.", errorMessage);
         }
     }

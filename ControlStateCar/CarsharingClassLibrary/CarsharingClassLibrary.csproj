@@ -91,6 +91,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Models\RepairRequestsListModel.cs" />
+    <Compile Include="Models\RepairStatus.cs" />
     <Compile Include="Views\IRepairRequestRepository.cs" />
     <Compile Include="Models\RepairRequest.cs" />
     <Compile Include="Presenters\AuthService.cs" />

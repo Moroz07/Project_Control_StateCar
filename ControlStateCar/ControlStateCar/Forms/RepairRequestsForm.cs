@@ -20,12 +20,14 @@ namespace ControlStateCar
             SetupDataGridView();
             LoadTechniciansToComboBox();
 
-            if (_currentUser != null && _currentUser.Role == Role.техник)
+            if (_currentUser != null)
             {
-                cmbAssignTech.Visible = false;
-                btnAssign.Visible = false;
-
-                btnCancelRequest.Location = btnAssign.Location;
+                if (_currentUser.Role == Role.техник)
+                {
+                    cmbAssignTech.Visible = false;
+                    btnAssign.Visible = false;
+                    btnCancelRequest.Location = cmbAssignTech.Location;
+                }
             }
         }
 
@@ -59,32 +61,23 @@ namespace ControlStateCar
             {
                 Name = "colCarNumber",
                 HeaderText = "Госномер",
-                FillWeight = 80,
+                FillWeight = 85,
                 ReadOnly = true
             });
 
             dgvRequests.Columns.Add(new DataGridViewTextBoxColumn
             {
                 Name = "colDescription",
-                HeaderText = "Описание неисправности",
-                FillWeight = 190,
+                HeaderText = "Описание неисправности (двойной клик для полного текста)",
+                FillWeight = 230,
                 ReadOnly = true
-            });
-
-            dgvRequests.Columns.Add(new DataGridViewButtonColumn
-            {
-                Name = "colMore",
-                HeaderText = "+",
-                Text = "+",
-                UseColumnTextForButtonValue = true,
-                FillWeight = 30
             });
 
             dgvRequests.Columns.Add(new DataGridViewTextBoxColumn
             {
                 Name = "colStatus",
                 HeaderText = "Статус",
-                FillWeight = 80,
+                FillWeight = 85,
                 ReadOnly = true
             });
 
@@ -112,23 +105,20 @@ namespace ControlStateCar
 
             try
             {
-                using (var conn = new NpgsqlConnection(DBConnection.connectionString_))
+                var conn = DBConnection.GetOpenConnection();
+                string sql = "SELECT login FROM employees WHERE role = 'техник' OR role = 'technician' ORDER BY full_name ASC";
+                using (var cmd = new NpgsqlCommand(sql, conn))
+                using (var reader = cmd.ExecuteReader())
                 {
-                    conn.Open();
-                    string sql = "SELECT login FROM employees WHERE role = 'техник' OR role = 'technician' ORDER BY full_name ASC";
-                    using (var cmd = new NpgsqlCommand(sql, conn))
-                    using (var reader = cmd.ExecuteReader())
+                    while (reader.Read())
                     {
-                        while (reader.Read())
-                        {
-                            techLogins.Add(reader.GetString(0));
-                        }
+                        techLogins.Add(reader.GetString(0));
                     }
                 }
             }
             catch (Exception)
             {
-
+                // Игнорируем при отсутствии соединения
             }
 
             if (techLogins.Count > 0)
@@ -158,23 +148,46 @@ namespace ControlStateCar
             dgvRequests.Rows.Clear();
 
             if (requests == null)
+            {
                 return;
+            }
 
             foreach (var req in requests)
             {
-                string statusDisplay = req.Status == RepairStatus.в_работе
-                    ? "в работе"
-                    : req.Status.ToString();
+                string statusDisplay;
+                switch (req.Status)
+                {
+                    case RepairStatus.New:
+                        statusDisplay = "новый";
+                        break;
+                    case RepairStatus.InProgress:
+                        statusDisplay = "в работе";
+                        break;
+                    case RepairStatus.Completed:
+                        statusDisplay = "завершён";
+                        break;
+                    case RepairStatus.Cancelled:
+                        statusDisplay = "отменена";
+                        break;
+                    default:
+                        statusDisplay = "новый";
+                        break;
+                }
 
-                string techDisplay = string.IsNullOrWhiteSpace(req.TechnicianLogin)
-                    ? "Не назначен"
-                    : req.TechnicianLogin;
+                string techDisplay;
+                if (req.TechnicianLogin == null || req.TechnicianLogin.Trim() == "")
+                {
+                    techDisplay = "Не назначен";
+                }
+                else
+                {
+                    techDisplay = req.TechnicianLogin;
+                }
 
                 int rowIndex = dgvRequests.Rows.Add(
                     req.Id,
                     req.CarNumber,
                     req.Description,
-                    "+",
                     statusDisplay,
                     req.CreatedAt.ToString("dd.MM.yyyy HH:mm"),
                     techDisplay
@@ -184,23 +197,22 @@ namespace ControlStateCar
             }
         }
 
-        private void dgvRequests_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        private void dgvRequests_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex < 0)
-                return;
-
-            if (dgvRequests.Columns[e.ColumnIndex].Name == "colMore")
             {
-                var req = dgvRequests.Rows[e.RowIndex].Tag as RepairRequest;
-                if (req != null)
-                {
-                    MessageBox.Show(
-                        req.Description,
-                        $"Полное описание заявки №{req.Id} ({req.CarNumber})",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Information
-                    );
-                }
+                return;
+            }
+
+            var req = dgvRequests.Rows[e.RowIndex].Tag as RepairRequest;
+            if (req != null)
+            {
+                MessageBox.Show(
+                    req.Description,
+                    $"Полное описание заявки №{req.Id} ({req.CarNumber})",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information
+                );
             }
         }
 
@@ -212,18 +224,21 @@ namespace ControlStateCar
                 return;
             }
 
-            var selectedRow = dgvRequests.SelectedRows[0];
-            var request = selectedRow.Tag as RepairRequest;
-
+            var request = dgvRequests.SelectedRows[0].Tag as RepairRequest;
             if (request == null)
+            {
                 return;
+            }
 
-            string selectedTechnician = cmbAssignTech.SelectedItem?.ToString();
-            string errorMessage;
+            string selectedTechnician = "";
+            if (cmbAssignTech.SelectedItem != null)
+            {
+                selectedTechnician = cmbAssignTech.SelectedItem.ToString();
+            }
 
-            bool success = _model.AssignTechnicianToRequest(request.Id, selectedTechnician, out errorMessage);
+            string errorMessage = _model.AssignTechnicianToRequest(request.Id, selectedTechnician);
 
-            if (success)
+            if (errorMessage == null || errorMessage.Trim() == "")
             {
                 MessageBox.Show("Техник успешно назначен, статус заявки изменен на 'в работе'.", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 LoadDefaultRequests();
@@ -242,25 +257,27 @@ namespace ControlStateCar
                 return;
             }
 
-            var selectedRow = dgvRequests.SelectedRows[0];
-            var request = selectedRow.Tag as RepairRequest;
-
+            var request = dgvRequests.SelectedRows[0].Tag as RepairRequest;
             if (request == null)
-                return;
-
-            if (_currentUser != null && _currentUser.Role == Role.техник)
             {
-                if (request.TechnicianLogin != _currentUser.Login)
+                return;
+            }
+
+            if (_currentUser != null)
+            {
+                if (_currentUser.Role == Role.техник)
                 {
-                    MessageBox.Show("Вы можете отменять только те заявки, которые назначены на вас.", "Доступ запрещен", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
+                    if (request.TechnicianLogin != _currentUser.Login)
+                    {
+                        MessageBox.Show("Вы можете отменять только те заявки, которые назначены на вас.", "Доступ запрещен", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
                 }
             }
 
-            string errorMessage;
-            bool success = _model.CancelRequest(request.Id, out errorMessage);
+            string errorMessage = _model.CancelRequest(request.Id);
 
-            if (success)
+            if (errorMessage == null || errorMessage.Trim() == "")
             {
                 MessageBox.Show("Заявка успешно отменена.", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 LoadDefaultRequests();

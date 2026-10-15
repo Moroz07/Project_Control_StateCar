@@ -2,14 +2,6 @@
 
 namespace ControlStateCar
 {
-    public enum RepairStatus
-    {
-        новый,
-        в_работе,
-        завершён,
-        отменена
-    }
-
     public class RepairRequest
     {
         public int Id { get; set; }

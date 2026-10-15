@@ -9,6 +9,7 @@ namespace ControlStateCar
 
         public List<RepairRequest> Requests { get; set; }
         public int TotalCount => Requests?.Count ?? 0;
+
         public RepairRequestsListModel(IRepairRequestRepository repository, User currentUser = null)
         {
             _repository = repository;
@@ -28,46 +29,36 @@ namespace ControlStateCar
             }
         }
 
-        public bool AssignTechnicianToRequest(int requestId, string technicianLogin, out string errorMessage)
+        public string AssignTechnicianToRequest(int requestId, string technicianLogin)
         {
             if (string.IsNullOrEmpty(technicianLogin))
             {
-                errorMessage = "Выберите техника из списка.";
-                return false;
+                return "Выберите техника из списка.";
             }
 
             bool isSuccess = _repository.AssignTechnician(requestId, technicianLogin);
             if (isSuccess)
             {
-                errorMessage = "";
-                return true;
+                return string.Empty;
             }
-            else
-            {
-                errorMessage = "Не удалось назначить техника в базе данных.";
-                return false;
-            }
+
+            return "Не удалось назначить техника в базе данных.";
         }
 
-        public bool CancelRequest(int requestId, out string errorMessage)
+        public string CancelRequest(int requestId)
         {
             if (_currentUser == null || string.IsNullOrEmpty(_currentUser.Login))
             {
-                errorMessage = "Ошибка определения текущего пользователя.";
-                return false;
+                return "Ошибка определения текущего пользователя.";
             }
 
-            bool isSuccess = ((RepairRequestRepository)_repository).CancelRequest(requestId, _currentUser.Login);
+            bool isSuccess = _repository.CancelRequest(requestId, _currentUser.Login);
             if (isSuccess)
             {
-                errorMessage = "";
-                return true;
+                return string.Empty;
             }
-            else
-            {
-                errorMessage = "Не удалось отменить заявку. Убедитесь, что она назначена на вас.";
-                return false;
-            }
+
+            return "Не удалось отменить заявку. Убедитесь, что она назначена на вас.";
         }
     }
 }
