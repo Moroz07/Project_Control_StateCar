@@ -25,10 +25,10 @@ namespace TAuthorization
                 Role = Role.техник
             };
 
-            var mock = new Mock<IUserRepository>();
+            var mock = new Mock<IDBConnection>();
             mock.Setup(repo => repo.AddUser(user)).Returns(true);
 
-            IUserRepository repository = mock.Object;
+            IDBConnection repository = mock.Object;
             bool result = repository.AddUser(user);
 
             Assert.IsTrue(result);
@@ -41,10 +41,10 @@ namespace TAuthorization
         [TestMethod]
         public void TestMethod_CheckIfLoginExists_AlreadyExists()
         {
-            var mock = new Mock<IUserRepository>();
+            var mock = new Mock<IDBConnection>();
             mock.Setup(repo => repo.CheckIfLoginExists("sidorov_i")).Returns(false);
 
-            IUserRepository repository = mock.Object;
+            IDBConnection repository = mock.Object;
             bool exists = repository.CheckIfLoginExists("sidorov_i");
 
             Assert.IsFalse(exists);
@@ -54,10 +54,10 @@ namespace TAuthorization
         [TestMethod]
         public void TestMethod_CheckIfLoginExists_NewLogin()
         {
-            var mock = new Mock<IUserRepository>();
+            var mock = new Mock<IDBConnection>();
             mock.Setup(repo => repo.CheckIfLoginExists("new_unique_user")).Returns(true);
 
-            IUserRepository repository = mock.Object;
+            IDBConnection repository = mock.Object;
             bool exists = repository.CheckIfLoginExists("new_unique_user");
 
             Assert.IsTrue(exists);

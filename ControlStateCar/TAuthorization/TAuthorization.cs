@@ -11,7 +11,7 @@ namespace TAuthorization
         [TestMethod]
         public void TestMethod_ValidateCredentials_Success()
         {
-            var mock = new Mock<IUserRepository>();
+            var mock = new Mock<IDBConnection>();
             mock.Setup(repo => repo.FindByLogin("ivanov"))
                 .Returns(new User
                 {
@@ -21,7 +21,7 @@ namespace TAuthorization
                     FullName = "Иванов Иван Иванович"
                 });
 
-            IUserRepository repository = mock.Object;
+            IDBConnection repository = mock.Object;
             AuthService authService = new AuthService(repository);
 
             bool flag = authService.ValidateCredentials("ivanov", "EmpPass123!");
@@ -33,7 +33,7 @@ namespace TAuthorization
         [TestMethod]
         public void TestMethod_ValidateCredentials_WrongPassword()
         {
-            var mock = new Mock<IUserRepository>();
+            var mock = new Mock<IDBConnection>();
             mock.Setup(repo => repo.FindByLogin("ivanov"))
                 .Returns(new User
                 {
@@ -43,7 +43,7 @@ namespace TAuthorization
                     FullName = "Иванов Иван Иванович"
                 });
 
-            IUserRepository repository = mock.Object;
+            IDBConnection repository = mock.Object;
             AuthService authService = new AuthService(repository);
 
             bool flag = authService.ValidateCredentials("ivanov", "WrongPassword");
@@ -55,11 +55,11 @@ namespace TAuthorization
         [TestMethod]
         public void TestMethod_ValidateCredentials_UserNotFound()
         {
-            var mock = new Mock<IUserRepository>();
+            var mock = new Mock<IDBConnection>();
             mock.Setup(repo => repo.FindByLogin("unknown_user"))
                 .Returns((User)null);
 
-            IUserRepository repository = mock.Object;
+            IDBConnection repository = mock.Object;
             AuthService authService = new AuthService(repository);
 
             bool flag = authService.ValidateCredentials("unknown_user", "EmpPass123!");
@@ -71,7 +71,7 @@ namespace TAuthorization
         [TestMethod]
         public void TestMethod_GetUserRole_Admin()
         {
-            var mock = new Mock<IUserRepository>();
+            var mock = new Mock<IDBConnection>();
             mock.Setup(repo => repo.FindByLogin("admin_petr"))
                 .Returns(new User
                 {
@@ -81,7 +81,7 @@ namespace TAuthorization
                     FullName = "Петров Пётр Петрович"
                 });
 
-            IUserRepository repository = mock.Object;
+            IDBConnection repository = mock.Object;
             AuthService authService = new AuthService(repository);
 
             string role = authService.GetUserRole("admin_petr");
@@ -93,7 +93,7 @@ namespace TAuthorization
         [TestMethod]
         public void TestMethod_Login_Success()
         {
-            var mock = new Mock<IUserRepository>();
+            var mock = new Mock<IDBConnection>();
             mock.Setup(repo => repo.FindByLogin("ivanov"))
                 .Returns(new User
                 {
@@ -103,7 +103,7 @@ namespace TAuthorization
                     FullName = "Иванов Иван Иванович"
                 });
 
-            IUserRepository repository = mock.Object;
+            IDBConnection repository = mock.Object;
             AuthService authService = new AuthService(repository);
 
             string errorMessage;
