@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ControlStateCar", "ControlS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CarsharingClassLibrary", "CarsharingClassLibrary\CarsharingClassLibrary.csproj", "{E79D845C-4CB8-49D9-99FD-282EDE606CE1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TAuthorization", "TAuthorization\TAuthorization.csproj", "{7415B065-A731-4B2E-84BD-9F220E7072E6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TControlStateCar", "TAuthorization\TControlStateCar.csproj", "{7415B065-A731-4B2E-84BD-9F220E7072E6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

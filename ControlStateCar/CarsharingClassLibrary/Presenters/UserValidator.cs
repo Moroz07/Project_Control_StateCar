@@ -13,7 +13,7 @@ namespace ControlStateCar
                 return false;
             }
 
-            return Regex.IsMatch(login, @"^[a-zA-Z0-9]+$");
+            return Regex.IsMatch(login, @"^[a-zA-Z0-9_]+$");
         }
 
         public bool ValidatePassword(string password)
