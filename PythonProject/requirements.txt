@@ -2,3 +2,5 @@ fastapi
 uvicorn
 pydantic>=2
 psycopg2-binary
+httpx
+pytest

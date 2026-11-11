@@ -1,7 +1,6 @@
 from app.repositories import DiagnosticsRepository
-from app.services import DiagnosticsService
+from app.services import DiagnosticsService, HttpSensorClient
 
 
 def get_diagnostics_service() -> DiagnosticsService:
-    repo = DiagnosticsRepository()
-    return DiagnosticsService(repo)
+    return DiagnosticsService(DiagnosticsRepository(), HttpSensorClient())
