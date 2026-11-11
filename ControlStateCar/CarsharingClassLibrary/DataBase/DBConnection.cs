@@ -45,7 +45,7 @@ namespace ControlStateCar
             string port = "5432";
             string database = "CompanyDB";
             string username = "postgres";
-            string password = "123";
+            string password = "123456";
 
             string iniPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.ini");
             if (File.Exists(iniPath))
