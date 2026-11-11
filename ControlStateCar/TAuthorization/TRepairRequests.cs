@@ -78,7 +78,7 @@ namespace TAuthorization
 
             string errorMessage = model.AssignTechnicianToRequest(1, "");
 
-            Assert.AreEqual("Выберите техника из списка.", errorMessage);
+            Assert.AreEqual("Не выбран техник для назначения.", errorMessage);
         }
     }
 }

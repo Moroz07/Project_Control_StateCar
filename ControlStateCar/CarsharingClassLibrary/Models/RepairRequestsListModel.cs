@@ -1,64 +1,113 @@
 ﻿using System.Collections.Generic;
+using CarsharingClassLibrary.Models;
 
 namespace ControlStateCar
 {
     public class RepairRequestsListModel
     {
-        private IRepairRequestRepository _repository;
-        private User _currentUser;
+        private IRepairRequestRepository repository_;
+        private User currentUser_;
 
         public List<RepairRequest> Requests { get; set; }
-        public int TotalCount => Requests?.Count ?? 0;
+
+        public int TotalCount
+        {
+            get
+            {
+                if (Requests == null)
+                {
+                    return 0;
+                }
+                return Requests.Count;
+            }
+        }
 
         public RepairRequestsListModel(IRepairRequestRepository repository, User currentUser = null)
         {
-            _repository = repository;
-            _currentUser = currentUser;
+            repository_ = repository;
+            currentUser_ = currentUser;
             Requests = new List<RepairRequest>();
         }
 
         public void LoadRecentRequests(int count = 15)
         {
-            if (_currentUser != null)
+            Role role = Role.администратор;
+            string login = "";
+
+            if (currentUser_ != null)
             {
-                Requests = _repository.GetRecentRepairRequests(_currentUser.Role, _currentUser.Login, count);
+                role = currentUser_.Role;
+                login = currentUser_.Login;
             }
-            else
+
+            Requests = repository_.GetRecentRepairRequests(role, login, count);
+        }
+
+        public string ApplyFilter(RepairRequestFilterParameters filterParams)
+        {
+            Role role = Role.администратор;
+            string login = "";
+
+            if (currentUser_ != null)
             {
-                Requests = _repository.GetRecentRepairRequests(Role.администратор, string.Empty, count);
+                role = currentUser_.Role;
+                login = currentUser_.Login;
             }
+
+            if (role == Role.техник)
+            {
+                if (filterParams != null)
+                {
+                    filterParams.TechnicianLogin = login;
+                }
+            }
+
+            var results = repository_.FilterRepairRequests(role, login, filterParams);
+            Requests = results;
+
+            if (results == null || results.Count == 0)
+            {
+                return "Заявки по заданным критериям не найдены";
+            }
+
+            return string.Empty;
         }
 
         public string AssignTechnicianToRequest(int requestId, string technicianLogin)
         {
-            if (string.IsNullOrEmpty(technicianLogin))
+            if (technicianLogin == null || technicianLogin.Trim() == "" || technicianLogin == "Нет техников")
             {
-                return "Выберите техника из списка.";
+                return "Не выбран техник для назначения.";
             }
 
-            bool isSuccess = _repository.AssignTechnician(requestId, technicianLogin);
-            if (isSuccess)
+            bool success = repository_.AssignTechnician(requestId, technicianLogin);
+            if (success)
             {
                 return string.Empty;
             }
-
-            return "Не удалось назначить техника в базе данных.";
+            else
+            {
+                return "Не удалось назначить техника на заявку.";
+            }
         }
 
         public string CancelRequest(int requestId)
         {
-            if (_currentUser == null || string.IsNullOrEmpty(_currentUser.Login))
+            string techLogin = "";
+            if (currentUser_ != null)
             {
-                return "Ошибка определения текущего пользователя.";
+                techLogin = currentUser_.Login;
             }
 
-            bool isSuccess = _repository.CancelRequest(requestId, _currentUser.Login);
-            if (isSuccess)
+            bool success = repository_.CancelRequest(requestId, techLogin);
+            if (success)
             {
                 return string.Empty;
             }
-
-            return "Не удалось отменить заявку. Убедитесь, что она назначена на вас.";
+            else
+            {
+                return "Не удалось отменить заявку.";
+            }
         }
     }
 }
