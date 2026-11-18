@@ -62,6 +62,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="RepairRequestDetailsTests.cs" />
     <Compile Include="RepairRequestsFilterTests.cs" />
     <Compile Include="TAuthorization.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
