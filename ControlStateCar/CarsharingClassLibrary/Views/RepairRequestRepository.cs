@@ -165,5 +165,102 @@ namespace ControlStateCar
                 return false;
             }
         }
+
+            public List<RepairRequestDetails> GetAllRepairRequestDetails()
+        {
+            var detailsList = new List<RepairRequestDetails>();
+
+            try
+            {
+                var conn = DBConnection.GetOpenConnection();
+
+                string sql = @"
+                    SELECT 
+                        r.id,
+                        r.status,
+                        r.created_at,
+                        r.closed_at,
+                        r.description,
+                        v.brand,
+                        v.model,
+                        v.car_number,
+                        v.vin,
+                        v.year,
+                        e.login,
+                        e.full_name,
+                        e.phone
+                    FROM repair_requests r
+                    LEFT JOIN vehicles v ON r.vehicle_id = v.id
+                    LEFT JOIN employees e ON r.employee_id = e.id";
+
+                using (var cmd = new NpgsqlCommand(sql, conn))
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        var details = new RepairRequestDetails
+                        {
+                            Id = reader.GetInt32(0),
+                            CreatedAt = reader.GetDateTime(2)
+                        };
+
+                        string rawStatus = reader.IsDBNull(1) ? "open" : reader.GetString(1).ToLower();
+                        switch (rawStatus)
+                        {
+                            case "open":
+                            case "новый":
+                                details.Status = RepairStatus.New;
+                                break;
+                            case "in_progress":
+                            case "в работе":
+                            case "в_работе":
+                                details.Status = RepairStatus.InProgress;
+                                break;
+                            case "closed":
+                            case "завершён":
+                            case "завершен":
+                                details.Status = RepairStatus.Completed;
+                                break;
+                            case "cancelled":
+                            case "отменена":
+                                details.Status = RepairStatus.Cancelled;
+                                break;
+                            default:
+                                details.Status = RepairStatus.New;
+                                break;
+                        }
+
+                        if (!reader.IsDBNull(3))
+                        {
+                            details.ClosedAt = reader.GetDateTime(3);
+                        }
+                        else
+                        {
+                            details.ClosedAt = null;
+                        }
+
+                        details.Description = reader.IsDBNull(4) ? "Описание отсутствует" : reader.GetString(4);
+                        details.CarBrand = reader.IsDBNull(5) ? "Не указана" : reader.GetString(5);
+                        details.CarModel = reader.IsDBNull(6) ? "" : reader.GetString(6);
+                        details.CarNumber = reader.IsDBNull(7) ? "Без номера" : reader.GetString(7);
+                        details.Vin = reader.IsDBNull(8) ? "Не указан" : reader.GetString(8);
+                        details.Year = reader.IsDBNull(9) ? 0 : Convert.ToInt32(reader.GetValue(9));
+
+                        details.TechnicianLogin = reader.IsDBNull(10) ? null : reader.GetString(10);
+                        details.TechnicianFullName = reader.IsDBNull(11) ? "Не назначен" : reader.GetString(11);
+                        details.TechnicianPhone = reader.IsDBNull(12) ? "Не назначен" : reader.GetString(12);
+
+                        detailsList.Add(details);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                return new List<RepairRequestDetails>();
+            }
+
+            return detailsList;
+        }
     }
+    
 }
