@@ -206,14 +206,26 @@ namespace ControlStateCar
             }
 
             var req = dgvRequests.Rows[e.RowIndex].Tag as RepairRequest;
-            if (req != null)
+            if (req == null)
+            {
+                return;
+            }
+
+            var details = model_.GetRequestDetails(req.Id);
+            if (details == null)
             {
                 MessageBox.Show(
-                    req.Description,
-                    $"Полное описание заявки №{req.Id} ({req.CarNumber})",
+                    "Ошибка: Заявка не найдена в базе данных",
+                    "Ошибка",
                     MessageBoxButtons.OK,
-                    MessageBoxIcon.Information
+                    MessageBoxIcon.Error
                 );
+                return;
+            }
+
+            using (var detailsForm = new RepairRequestDetailsForm(details))
+            {
+                detailsForm.ShowDialog();
             }
         }
 
