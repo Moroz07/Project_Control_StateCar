@@ -181,5 +181,29 @@ namespace ControlStateCar
                 return "Не удалось отменить заявку.";
             }
         }
+
+        public RepairRequestDetails GetRequestDetails(int requestId)
+        {
+            if (requestId <= 0)
+            {
+                return null;
+            }
+
+            var allDetails = repository_.GetAllRepairRequestDetails();
+            if (allDetails == null)
+            {
+                return null;
+            }
+
+            foreach (var item in allDetails)
+            {
+                if (item.Id == requestId)
+                {
+                    return item;
+                }
+            }
+
+            return null;
+        }
     }
 }
