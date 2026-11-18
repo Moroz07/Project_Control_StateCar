@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using ControlStateCar;
@@ -14,11 +15,11 @@ namespace TAuthorization
             var mock = new Mock<IRepairRequestRepository>();
             var sampleRequests = new List<RepairRequest>
             {
-                new RepairRequest { Id = 1, CarNumber = "A123BC77", Status = RepairStatus.New },
-                new RepairRequest { Id = 2, CarNumber = "B456OP77", Status = RepairStatus.InProgress }
+                new RepairRequest { Id = 1, CarNumber = "A123BC77", Status = RepairStatus.New, CreatedAt = new DateTime(2026, 11, 10) },
+                new RepairRequest { Id = 2, CarNumber = "B456OP77", Status = RepairStatus.InProgress, CreatedAt = new DateTime(2026, 11, 12) }
             };
 
-            mock.Setup(repo => repo.GetRecentRepairRequests(Role.администратор, "admin_petr", 15))
+            mock.Setup(repo => repo.GetAllRepairRequests())
                 .Returns(sampleRequests);
 
             IRepairRequestRepository repository = mock.Object;
@@ -29,29 +30,8 @@ namespace TAuthorization
 
             Assert.IsNotNull(model.Requests);
             Assert.AreEqual(2, model.TotalCount);
-            Assert.AreEqual("A123BC77", model.Requests[0].CarNumber);
-        }
-
-        [TestMethod]
-        public void TestMethod_GetRecentRequests_ForTechnician()
-        {
-            var mock = new Mock<IRepairRequestRepository>();
-            var techRequests = new List<RepairRequest>
-            {
-                new RepairRequest { Id = 2, CarNumber = "B456OP77", Status = RepairStatus.InProgress, TechnicianLogin = "ivanov" }
-            };
-
-            mock.Setup(repo => repo.GetRecentRepairRequests(Role.техник, "ivanov", 15))
-                .Returns(techRequests);
-
-            IRepairRequestRepository repository = mock.Object;
-            var currentUser = new User { Login = "ivanov", Role = Role.техник };
-            var model = new RepairRequestsListModel(repository, currentUser);
-
-            model.LoadRecentRequests(15);
-
-            Assert.AreEqual(1, model.TotalCount);
-            Assert.AreEqual("ivanov", model.Requests[0].TechnicianLogin);
+            // Более новая заявка (Id = 2) должна оказаться первой после сортировки в модели
+            Assert.AreEqual("B456OP77", model.Requests[0].CarNumber);
         }
 
         [TestMethod]

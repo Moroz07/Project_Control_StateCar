@@ -1,8 +1,5 @@
-﻿    using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using CarsharingClassLibrary.Models;
 using ControlStateCar;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -13,167 +10,119 @@ namespace TAuthorization
     [TestClass]
     public class RepairRequestsFilterTests
     {
-        [TestMethod]
-        public void ApplyFilter_CarNumberFilter_ReturnsFilteredList()
+        private List<RepairRequest> CreateSampleRequests()
         {
-            var mockRepo = new Mock<IRepairRequestRepository>();
-            var adminUser = new User
-            {
-                Login = "morozov",
-                Role = Role.администратор
-            };
-
-            var expectedList = new List<RepairRequest>
+            return new List<RepairRequest>
             {
                 new RepairRequest
                 {
                     Id = 1,
                     CarNumber = "A123BC77",
-                    Status = RepairStatus.New
-                }
-            };
-
-            mockRepo.Setup(r => r.FilterRepairRequests(
-                Role.администратор,
-                "morozov",
-                It.Is<RepairRequestFilterParameters>(p => p.CarNumber == "123")
-            )).Returns(expectedList);
-
-            var model = new RepairRequestsListModel(mockRepo.Object, adminUser);
-            var filterParams = new RepairRequestFilterParameters
-            {
-                CarNumber = "123"
-            };
-
-            string result = model.ApplyFilter(filterParams);
-
-            Assert.AreEqual(string.Empty, result);
-            Assert.AreEqual(1, model.TotalCount);
-            Assert.AreEqual("A123BC77", model.Requests[0].CarNumber);
-        }
-
-        [TestMethod]
-        public void ApplyFilter_StatusFilter_ReturnsOnlyMatchingStatus()
-        {
-            var mockRepo = new Mock<IRepairRequestRepository>();
-            var adminUser = new User
-            {
-                Login = "morozov",
-                Role = Role.администратор
-            };
-
-            var expectedList = new List<RepairRequest>
-            {
+                    Status = RepairStatus.New,
+                    TechnicianLogin = "ivanov",
+                    CreatedAt = new DateTime(2026, 11, 10)
+                },
                 new RepairRequest
                 {
                     Id = 2,
                     CarNumber = "B456OP77",
-                    Status = RepairStatus.InProgress
+                    Status = RepairStatus.InProgress,
+                    TechnicianLogin = "sidorov_i",
+                    CreatedAt = new DateTime(2026, 11, 11)
                 },
                 new RepairRequest
                 {
-                    Id = 5,
-                    CarNumber = "O654TM77",
-                    Status = RepairStatus.InProgress
+                    Id = 3,
+                    CarNumber = "C789MK77",
+                    Status = RepairStatus.Completed,
+                    TechnicianLogin = "ivanov",
+                    CreatedAt = new DateTime(2026, 11, 12)
                 }
             };
+        }
 
-            mockRepo.Setup(r => r.FilterRepairRequests(
-                Role.администратор,
-                "morozov",
-                It.Is<RepairRequestFilterParameters>(p => p.Status == RepairStatus.InProgress)
-            )).Returns(expectedList);
+        [TestMethod]
+        public void ApplyFilter_IvanovSearchesByIvanov_ReturnsIvanovRequests()
+        {
+            // Иванов ищет заявки по Иванову -> выдаются только заявки Иванова
+            var mockRepo = new Mock<IRepairRequestRepository>();
+            mockRepo.Setup(repo => repo.GetAllRepairRequests()).Returns(CreateSampleRequests());
 
-            var model = new RepairRequestsListModel(mockRepo.Object, adminUser);
+            var userIvanov = new User { Login = "ivanov", Role = Role.техник };
+            var model = new RepairRequestsListModel(mockRepo.Object, userIvanov);
+
             var filterParams = new RepairRequestFilterParameters
             {
-                Status = RepairStatus.InProgress
+                TechnicianLogin = "ivanov"
             };
 
             string result = model.ApplyFilter(filterParams);
 
             Assert.AreEqual(string.Empty, result);
             Assert.AreEqual(2, model.TotalCount);
-            for (int i = 0; i < model.Requests.Count; i++)
-            {
-                Assert.AreEqual(RepairStatus.InProgress, model.Requests[i].Status);
-            }
+            Assert.AreEqual("ivanov", model.Requests[0].TechnicianLogin);
+            Assert.AreEqual("ivanov", model.Requests[1].TechnicianLogin);
+            // Проверка сортировки в модели: более новая заявка (Id = 3) идёт первой
+            Assert.AreEqual(3, model.Requests[0].Id);
         }
 
         [TestMethod]
-        public void ApplyFilter_TechnicianRole_ForcesOwnLoginInFilter()
+        public void ApplyFilter_ByCarNumber_ReturnsMatchingRequest()
         {
-            // Arrange (Сценарий 3: Ролевое ограничение при фильтрации для техника)
+            // Поиск по фрагменту госномера "456" -> выдаётся заявка "B456OP77"
             var mockRepo = new Mock<IRepairRequestRepository>();
-            var techUser = new User
-            {
-                Login = "ivanov",
-                Role = Role.техник
-            };
+            mockRepo.Setup(repo => repo.GetAllRepairRequests()).Returns(CreateSampleRequests());
 
-            var techRequests = new List<RepairRequest>
-            {
-                new RepairRequest
-                {
-                    Id = 2,
-                    CarNumber = "B456OP77",
-                    TechnicianLogin = "ivanov"
-                }
-            };
-
-            mockRepo.Setup(r => r.FilterRepairRequests(
-                Role.техник,
-                "ivanov",
-                It.Is<RepairRequestFilterParameters>(p => p.TechnicianLogin == "ivanov")
-            )).Returns(techRequests);
-
-            var model = new RepairRequestsListModel(mockRepo.Object, techUser);
+            var model = new RepairRequestsListModel(mockRepo.Object);
             var filterParams = new RepairRequestFilterParameters
             {
-                TechnicianLogin = "sidorov_i" // Попытка указать логин чужого техника
+                CarNumber = "456"
             };
 
-            // Act
             string result = model.ApplyFilter(filterParams);
 
-            // Assert
             Assert.AreEqual(string.Empty, result);
             Assert.AreEqual(1, model.TotalCount);
-            Assert.AreEqual("ivanov", model.Requests[0].TechnicianLogin);
-            Assert.AreEqual("ivanov", filterParams.TechnicianLogin);
+            Assert.AreEqual("B456OP77", model.Requests[0].CarNumber);
         }
 
         [TestMethod]
-        public void ApplyFilter_NoMatchingRecords_ReturnsErrorMessageAndEmptyList()
+        public void ApplyFilter_ByStatus_ReturnsMatchingRequest()
         {
-            // Arrange (Сценарий 4: Отсутствие записей по заданной комбинации критериев)
+            // Фильтрация по статусу "новый" -> выдаётся заявка со статусом New
             var mockRepo = new Mock<IRepairRequestRepository>();
-            var adminUser = new User
+            mockRepo.Setup(repo => repo.GetAllRepairRequests()).Returns(CreateSampleRequests());
+
+            var model = new RepairRequestsListModel(mockRepo.Object);
+            var filterParams = new RepairRequestFilterParameters
             {
-                Login = "morozov",
-                Role = Role.администратор
+                Status = RepairStatus.New
             };
 
-            mockRepo.Setup(r => r.FilterRepairRequests(
-                Role.администратор,
-                "morozov",
-                It.IsAny<RepairRequestFilterParameters>()
-            )).Returns(new List<RepairRequest>());
+            string result = model.ApplyFilter(filterParams);
 
-            var model = new RepairRequestsListModel(mockRepo.Object, adminUser);
+            Assert.AreEqual(string.Empty, result);
+            Assert.AreEqual(1, model.TotalCount);
+            Assert.AreEqual(RepairStatus.New, model.Requests[0].Status);
+        }
+
+        [TestMethod]
+        public void ApplyFilter_NoMatches_ReturnsMessageAndEmptyList()
+        {
+            // Поиск несуществующего госномера -> возвращается сообщение и пустой список
+            var mockRepo = new Mock<IRepairRequestRepository>();
+            mockRepo.Setup(repo => repo.GetAllRepairRequests()).Returns(CreateSampleRequests());
+
+            var model = new RepairRequestsListModel(mockRepo.Object);
             var filterParams = new RepairRequestFilterParameters
             {
                 CarNumber = "X999XX"
             };
 
-            // Act
             string result = model.ApplyFilter(filterParams);
 
-            // Assert
             Assert.AreEqual("Заявки по заданным критериям не найдены", result);
             Assert.AreEqual(0, model.TotalCount);
-            Assert.IsNotNull(model.Requests);
-            Assert.AreEqual(0, model.Requests.Count);
         }
     }
 }

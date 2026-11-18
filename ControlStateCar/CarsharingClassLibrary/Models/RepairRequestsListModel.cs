@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using CarsharingClassLibrary.Models;
 
 namespace ControlStateCar
@@ -29,43 +30,114 @@ namespace ControlStateCar
             Requests = new List<RepairRequest>();
         }
 
+        private int CompareByCreatedAtDesc(RepairRequest a, RepairRequest b)
+        {
+            return b.CreatedAt.CompareTo(a.CreatedAt);
+        }
+
         public void LoadRecentRequests(int count = 15)
         {
-            Role role = Role.администратор;
-            string login = "";
-
-            if (currentUser_ != null)
+            var allRequests = repository_.GetAllRepairRequests();
+            if (allRequests == null)
             {
-                role = currentUser_.Role;
-                login = currentUser_.Login;
+                Requests = new List<RepairRequest>();
+                return;
             }
 
-            Requests = repository_.GetRecentRepairRequests(role, login, count);
+            // Сортировка по дате создания (сначала новые) на уровне программы
+            allRequests.Sort(CompareByCreatedAtDesc);
+
+            // Ограничение выборки до count (15) записей на уровне программы
+            var recent = new List<RepairRequest>();
+            int limit = count;
+            if (allRequests.Count < limit)
+            {
+                limit = allRequests.Count;
+            }
+
+            for (int i = 0; i < limit; i++)
+            {
+                recent.Add(allRequests[i]);
+            }
+
+            Requests = recent;
         }
 
         public string ApplyFilter(RepairRequestFilterParameters filterParams)
         {
-            Role role = Role.администратор;
-            string login = "";
-
-            if (currentUser_ != null)
+            var allRequests = repository_.GetAllRepairRequests();
+            if (allRequests == null)
             {
-                role = currentUser_.Role;
-                login = currentUser_.Login;
+                Requests = new List<RepairRequest>();
+                return "Заявки по заданным критериям не найдены";
             }
 
-            if (role == Role.техник)
+            if (filterParams == null)
             {
-                if (filterParams != null)
+                allRequests.Sort(CompareByCreatedAtDesc);
+                Requests = allRequests;
+                if (Requests.Count == 0)
                 {
-                    filterParams.TechnicianLogin = login;
+                    return "Заявки по заданным критериям не найдены";
+                }
+                return string.Empty;
+            }
+
+            var filtered = new List<RepairRequest>();
+
+            foreach (var req in allRequests)
+            {
+                bool matches = true;
+
+                // Фильтрация по госномеру (без учёта регистра, по подстроке)
+                if (filterParams.CarNumber != null && filterParams.CarNumber.Trim() != "")
+                {
+                    string searchCar = filterParams.CarNumber.Trim().ToLower();
+                    if (req.CarNumber == null || !req.CarNumber.ToLower().Contains(searchCar))
+                    {
+                        matches = false;
+                    }
+                }
+
+                // Фильтрация по статусу
+                if (matches && filterParams.Status.HasValue)
+                {
+                    if (req.Status != filterParams.Status.Value)
+                    {
+                        matches = false;
+                    }
+                }
+
+                // Фильтрация по логину техника (доступна всем пользователям)
+                if (matches && filterParams.TechnicianLogin != null && filterParams.TechnicianLogin.Trim() != "")
+                {
+                    string searchTech = filterParams.TechnicianLogin.Trim().ToLower();
+                    if (req.TechnicianLogin == null || !req.TechnicianLogin.ToLower().Contains(searchTech))
+                    {
+                        matches = false;
+                    }
+                }
+
+                // Фильтрация по календарной дате создания
+                if (matches && filterParams.CreatedDate.HasValue)
+                {
+                    if (req.CreatedAt.Date != filterParams.CreatedDate.Value.Date)
+                    {
+                        matches = false;
+                    }
+                }
+
+                if (matches)
+                {
+                    filtered.Add(req);
                 }
             }
 
-            var results = repository_.FilterRepairRequests(role, login, filterParams);
-            Requests = results;
+            // Сортировка отфильтрованного списка (сначала новые) на уровне программы
+            filtered.Sort(CompareByCreatedAtDesc);
+            Requests = filtered;
 
-            if (results == null || results.Count == 0)
+            if (Requests.Count == 0)
             {
                 return "Заявки по заданным критериям не найдены";
             }
