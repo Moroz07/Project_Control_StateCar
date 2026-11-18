@@ -6,7 +6,7 @@ namespace ControlStateCar
 {
     public class RepairRequestRepository : IRepairRequestRepository
     {
-        public List<RepairRequest> GetRecentRepairRequests(Role role, string userLogin, int count = 15)
+        public List<RepairRequest> GetAllRepairRequests()
         {
             var requests = new List<RepairRequest>();
 
@@ -27,65 +27,66 @@ namespace ControlStateCar
                     LEFT JOIN vehicles v ON r.vehicle_id = v.id
                     LEFT JOIN employees e ON r.employee_id = e.id";
 
-                if (role == Role.техник)
-                {
-                    sql += " WHERE e.login = @technicianLogin";
-                }
-
-                sql += " ORDER BY r.created_at DESC LIMIT @count";
-
                 using (var cmd = new NpgsqlCommand(sql, conn))
+                using (var reader = cmd.ExecuteReader())
                 {
-                    cmd.Parameters.AddWithValue("@count", count);
-
-                    if (role == Role.техник)
+                    while (reader.Read())
                     {
-                        cmd.Parameters.AddWithValue("@technicianLogin", userLogin);
-                    }
-
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
+                        var req = new RepairRequest
                         {
-                            var request = new RepairRequest
-                            {
-                                Id = reader.GetInt32(0),
-                                CarName = reader.GetString(1),
-                                CarNumber = reader.GetString(2),
-                                Description = reader.GetString(3)
-                            };
+                            Id = reader.GetInt32(0),
+                            CarName = reader.GetString(1),
+                            CarNumber = reader.GetString(2),
+                            Description = reader.GetString(3)
+                        };
 
-                            string rawStatus = reader.IsDBNull(4) ? "open" : reader.GetString(4).ToLower();
-                            switch (rawStatus)
-                            {
-                                case "open":
-                                case "новый":
-                                    request.Status = RepairStatus.New;
-                                    break;
-                                case "in_progress":
-                                case "в работе":
-                                case "в_работе":
-                                    request.Status = RepairStatus.InProgress;
-                                    break;
-                                case "closed":
-                                case "завершён":
-                                case "завершен":
-                                    request.Status = RepairStatus.Completed;
-                                    break;
-                                case "cancelled":
-                                case "отменена":
-                                    request.Status = RepairStatus.Cancelled;
-                                    break;
-                                default:
-                                    request.Status = RepairStatus.New;
-                                    break;
-                            }
-
-                            request.CreatedAt = reader.GetDateTime(5);
-                            request.TechnicianLogin = reader.IsDBNull(6) ? "Не назначен" : reader.GetString(6);
-
-                            requests.Add(request);
+                        string rawStatus = "";
+                        if (!reader.IsDBNull(4))
+                        {
+                            rawStatus = reader.GetString(4).ToLower();
                         }
+                        else
+                        {
+                            rawStatus = "open";
+                        }
+
+                        switch (rawStatus)
+                        {
+                            case "open":
+                            case "новый":
+                                req.Status = RepairStatus.New;
+                                break;
+                            case "in_progress":
+                            case "в работе":
+                            case "в_работе":
+                                req.Status = RepairStatus.InProgress;
+                                break;
+                            case "closed":
+                            case "завершён":
+                            case "завершен":
+                                req.Status = RepairStatus.Completed;
+                                break;
+                            case "cancelled":
+                            case "отменена":
+                                req.Status = RepairStatus.Cancelled;
+                                break;
+                            default:
+                                req.Status = RepairStatus.New;
+                                break;
+                        }
+
+                        req.CreatedAt = reader.GetDateTime(5);
+
+                        if (!reader.IsDBNull(6))
+                        {
+                            req.TechnicianLogin = reader.GetString(6);
+                        }
+                        else
+                        {
+                            req.TechnicianLogin = "Не назначен";
+                        }
+
+                        requests.Add(req);
                     }
                 }
             }

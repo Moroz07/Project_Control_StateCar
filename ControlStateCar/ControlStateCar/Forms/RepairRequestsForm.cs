@@ -1,28 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
+using CarsharingClassLibrary.Models;
 using Npgsql;
 
 namespace ControlStateCar
 {
     public partial class RepairRequestsForm : Form
     {
-        private  RepairRequestsListModel _model;
-        private  User _currentUser;
+        private  RepairRequestsListModel model_;
+        private  User currentUser_;
 
         public RepairRequestsForm(RepairRequestsListModel model, User currentUser = null)
         {
             InitializeComponent();
-            _model = model;
-            _currentUser = currentUser;
+            model_ = model;
+            currentUser_ = currentUser;
 
             InitializeFilterPanel();
             SetupDataGridView();
             LoadTechniciansToComboBox();
 
-            if (_currentUser != null)
+            if (currentUser_ != null)
             {
-                if (_currentUser.Role == Role.техник)
+                if (currentUser_.Role == Role.техник)
                 {
                     cmbAssignTech.Visible = false;
                     btnAssign.Visible = false;
@@ -139,8 +140,8 @@ namespace ControlStateCar
 
         private void LoadDefaultRequests()
         {
-            _model.LoadRecentRequests(15);
-            DisplayRequests(_model.Requests);
+            model_.LoadRecentRequests(15);
+            DisplayRequests(model_.Requests);
         }
 
         private void DisplayRequests(List<RepairRequest> requests)
@@ -236,7 +237,7 @@ namespace ControlStateCar
                 selectedTechnician = cmbAssignTech.SelectedItem.ToString();
             }
 
-            string errorMessage = _model.AssignTechnicianToRequest(request.Id, selectedTechnician);
+            string errorMessage = model_.AssignTechnicianToRequest(request.Id, selectedTechnician);
 
             if (errorMessage == null || errorMessage.Trim() == "")
             {
@@ -263,11 +264,11 @@ namespace ControlStateCar
                 return;
             }
 
-            if (_currentUser != null)
+            if (currentUser_ != null)
             {
-                if (_currentUser.Role == Role.техник)
+                if (currentUser_.Role == Role.техник)
                 {
-                    if (request.TechnicianLogin != _currentUser.Login)
+                    if (request.TechnicianLogin != currentUser_.Login)
                     {
                         MessageBox.Show("Вы можете отменять только те заявки, которые назначены на вас.", "Доступ запрещен", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         return;
@@ -275,7 +276,7 @@ namespace ControlStateCar
                 }
             }
 
-            string errorMessage = _model.CancelRequest(request.Id);
+            string errorMessage = model_.CancelRequest(request.Id);
 
             if (errorMessage == null || errorMessage.Trim() == "")
             {
@@ -290,7 +291,50 @@ namespace ControlStateCar
 
         private void btnApply_Click(object sender, EventArgs e)
         {
+            var filterParams = new RepairRequestFilterParameters();
 
+            if (txtCarNumber.Text != null && txtCarNumber.Text.Trim() != "")
+            {
+                filterParams.CarNumber = txtCarNumber.Text.Trim();
+            }
+
+            if (cmbStatus.SelectedIndex > 0)
+            {
+                string selected = cmbStatus.SelectedItem.ToString();
+                switch (selected)
+                {
+                    case "новый":
+                        filterParams.Status = RepairStatus.New;
+                        break;
+                    case "в работе":
+                        filterParams.Status = RepairStatus.InProgress;
+                        break;
+                    case "завершён":
+                        filterParams.Status = RepairStatus.Completed;
+                        break;
+                    case "отменена":
+                        filterParams.Status = RepairStatus.Cancelled;
+                        break;
+                }
+            }
+
+            if (txtTechnician.Text != null && txtTechnician.Text.Trim() != "")
+            {
+                filterParams.TechnicianLogin = txtTechnician.Text.Trim();
+            }
+
+            if (dtpFilterDate.Checked)
+            {
+                filterParams.CreatedDate = dtpFilterDate.Value.Date;
+            }
+
+            string resultMessage = model_.ApplyFilter(filterParams);
+            DisplayRequests(model_.Requests);
+
+            if (resultMessage != null && resultMessage.Trim() != "")
+            {
+                MessageBox.Show(resultMessage, "Результаты поиска", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
         }
 
         private void btnReset_Click(object sender, EventArgs e)

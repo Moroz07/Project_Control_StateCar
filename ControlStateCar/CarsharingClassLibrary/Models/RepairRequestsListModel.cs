@@ -1,64 +1,185 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using CarsharingClassLibrary.Models;
 
 namespace ControlStateCar
 {
     public class RepairRequestsListModel
     {
-        private IRepairRequestRepository _repository;
-        private User _currentUser;
+        private IRepairRequestRepository repository_;
+        private User currentUser_;
 
         public List<RepairRequest> Requests { get; set; }
-        public int TotalCount => Requests?.Count ?? 0;
+
+        public int TotalCount
+        {
+            get
+            {
+                if (Requests == null)
+                {
+                    return 0;
+                }
+                return Requests.Count;
+            }
+        }
 
         public RepairRequestsListModel(IRepairRequestRepository repository, User currentUser = null)
         {
-            _repository = repository;
-            _currentUser = currentUser;
+            repository_ = repository;
+            currentUser_ = currentUser;
             Requests = new List<RepairRequest>();
+        }
+
+        private int CompareByCreatedAtDesc(RepairRequest a, RepairRequest b)
+        {
+            return b.CreatedAt.CompareTo(a.CreatedAt);
         }
 
         public void LoadRecentRequests(int count = 15)
         {
-            if (_currentUser != null)
+            var allRequests = repository_.GetAllRepairRequests();
+            if (allRequests == null)
             {
-                Requests = _repository.GetRecentRepairRequests(_currentUser.Role, _currentUser.Login, count);
+                Requests = new List<RepairRequest>();
+                return;
             }
-            else
+
+            // Сортировка по дате создания (сначала новые) на уровне программы
+            allRequests.Sort(CompareByCreatedAtDesc);
+
+            // Ограничение выборки до count (15) записей на уровне программы
+            var recent = new List<RepairRequest>();
+            int limit = count;
+            if (allRequests.Count < limit)
             {
-                Requests = _repository.GetRecentRepairRequests(Role.администратор, string.Empty, count);
+                limit = allRequests.Count;
             }
+
+            for (int i = 0; i < limit; i++)
+            {
+                recent.Add(allRequests[i]);
+            }
+
+            Requests = recent;
+        }
+
+        public string ApplyFilter(RepairRequestFilterParameters filterParams)
+        {
+            var allRequests = repository_.GetAllRepairRequests();
+            if (allRequests == null)
+            {
+                Requests = new List<RepairRequest>();
+                return "Заявки по заданным критериям не найдены";
+            }
+
+            if (filterParams == null)
+            {
+                allRequests.Sort(CompareByCreatedAtDesc);
+                Requests = allRequests;
+                if (Requests.Count == 0)
+                {
+                    return "Заявки по заданным критериям не найдены";
+                }
+                return string.Empty;
+            }
+
+            var filtered = new List<RepairRequest>();
+
+            foreach (var req in allRequests)
+            {
+                bool matches = true;
+
+                // Фильтрация по госномеру (без учёта регистра, по подстроке)
+                if (filterParams.CarNumber != null && filterParams.CarNumber.Trim() != "")
+                {
+                    string searchCar = filterParams.CarNumber.Trim().ToLower();
+                    if (req.CarNumber == null || !req.CarNumber.ToLower().Contains(searchCar))
+                    {
+                        matches = false;
+                    }
+                }
+
+                // Фильтрация по статусу
+                if (matches && filterParams.Status.HasValue)
+                {
+                    if (req.Status != filterParams.Status.Value)
+                    {
+                        matches = false;
+                    }
+                }
+
+                // Фильтрация по логину техника (доступна всем пользователям)
+                if (matches && filterParams.TechnicianLogin != null && filterParams.TechnicianLogin.Trim() != "")
+                {
+                    string searchTech = filterParams.TechnicianLogin.Trim().ToLower();
+                    if (req.TechnicianLogin == null || !req.TechnicianLogin.ToLower().Contains(searchTech))
+                    {
+                        matches = false;
+                    }
+                }
+
+                // Фильтрация по календарной дате создания
+                if (matches && filterParams.CreatedDate.HasValue)
+                {
+                    if (req.CreatedAt.Date != filterParams.CreatedDate.Value.Date)
+                    {
+                        matches = false;
+                    }
+                }
+
+                if (matches)
+                {
+                    filtered.Add(req);
+                }
+            }
+
+            // Сортировка отфильтрованного списка (сначала новые) на уровне программы
+            filtered.Sort(CompareByCreatedAtDesc);
+            Requests = filtered;
+
+            if (Requests.Count == 0)
+            {
+                return "Заявки по заданным критериям не найдены";
+            }
+
+            return string.Empty;
         }
 
         public string AssignTechnicianToRequest(int requestId, string technicianLogin)
         {
-            if (string.IsNullOrEmpty(technicianLogin))
+            if (technicianLogin == null || technicianLogin.Trim() == "" || technicianLogin == "Нет техников")
             {
-                return "Выберите техника из списка.";
+                return "Не выбран техник для назначения.";
             }
 
-            bool isSuccess = _repository.AssignTechnician(requestId, technicianLogin);
-            if (isSuccess)
+            bool success = repository_.AssignTechnician(requestId, technicianLogin);
+            if (success)
             {
                 return string.Empty;
             }
-
-            return "Не удалось назначить техника в базе данных.";
+            else
+            {
+                return "Не удалось назначить техника на заявку.";
+            }
         }
 
         public string CancelRequest(int requestId)
         {
-            if (_currentUser == null || string.IsNullOrEmpty(_currentUser.Login))
+            string techLogin = "";
+            if (currentUser_ != null)
             {
-                return "Ошибка определения текущего пользователя.";
+                techLogin = currentUser_.Login;
             }
 
-            bool isSuccess = _repository.CancelRequest(requestId, _currentUser.Login);
-            if (isSuccess)
+            bool success = repository_.CancelRequest(requestId, techLogin);
+            if (success)
             {
                 return string.Empty;
             }
-
-            return "Не удалось отменить заявку. Убедитесь, что она назначена на вас.";
+            else
+            {
+                return "Не удалось отменить заявку.";
+            }
         }
     }
 }

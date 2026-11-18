@@ -90,6 +90,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Models\RepairRequestFilterParameters.cs" />
     <Compile Include="Models\RepairRequestsListModel.cs" />
     <Compile Include="Models\RepairStatus.cs" />
     <Compile Include="Views\IRepairRequestRepository.cs" />
