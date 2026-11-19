@@ -7,6 +7,8 @@ from app.models import (
     EngineTelemetryResponse,
     ElectricalTelemetryResponse,
     ObdTelemetryResponse,
+    SensorType,
+    TelemetryHistoryResponse,
     VehicleNormAndState,
 )
 from app.repositories import ITelemetryRepository
@@ -114,4 +116,16 @@ class TelemetryService:
             vin=state.vin,
             car_number=state.car_number,
             dtc_events=dtc_events,
+        )
+
+    def get_telemetry_history(
+        self, vin: str, sensor_type: SensorType
+    ) -> TelemetryHistoryResponse:
+        clean_vin = vin.strip().upper()
+        state = self._get_norm_or_raise(clean_vin)
+        readings = self._repository.get_telemetry_readings(clean_vin, sensor_type)
+        return TelemetryHistoryResponse(
+            vin=state.vin,
+            sensor_type=sensor_type,
+            readings=readings,
         )

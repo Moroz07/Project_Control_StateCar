@@ -5,6 +5,8 @@ from app.models import (
     DtcEventRecord,
     ElectricalSensorPayload,
     EngineSensorPayload,
+    SensorType,
+    TelemetryReadingRecord,
     VehicleNormAndState,
 )
 
@@ -28,4 +30,10 @@ class ITelemetryRepository(ABC):
 
     @abstractmethod
     def get_dtc_events(self, vin: str) -> List[DtcEventRecord]:
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_telemetry_readings(
+        self, vin: str, sensor_type: SensorType
+    ) -> List[TelemetryReadingRecord]:
         raise NotImplementedError

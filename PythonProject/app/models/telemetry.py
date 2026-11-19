@@ -1,5 +1,6 @@
 from datetime import datetime
-from typing import List, Optional
+from enum import Enum
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel
 
@@ -40,3 +41,23 @@ class ObdTelemetryResponse(BaseModel):
     vin: str
     car_number: str
     dtc_events: List[DtcEventRecord]
+
+
+class SensorType(str, Enum):
+    ENGINE = "engine"
+    ELECTRICAL = "electrical"
+    OBD = "obd"
+
+
+class TelemetryReadingRecord(BaseModel):
+    id: int
+    vin: str
+    sensor_type: SensorType
+    recorded_at: datetime
+    data: Dict[str, Any]
+
+
+class TelemetryHistoryResponse(BaseModel):
+    vin: str
+    sensor_type: SensorType
+    readings: List[TelemetryReadingRecord]
