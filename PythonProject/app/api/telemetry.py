@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Path, status
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 from fastapi.responses import JSONResponse
 
 from app.api.dependencies import get_telemetry_service
@@ -10,6 +10,8 @@ from app.models import (
     EngineTelemetryResponse,
     ElectricalTelemetryResponse,
     ObdTelemetryResponse,
+    SensorType,
+    TelemetryHistoryResponse,
 )
 from app.services import TelemetryService, VehicleNotFoundError
 
@@ -193,6 +195,50 @@ def get_obd_telemetry(
 ):
     try:
         return service.get_obd_telemetry(vin)
+    except VehicleNotFoundError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except TelemetryStorageError as e:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e))
+
+
+@router.get(
+    "/{vin}/readings",
+    response_model=TelemetryHistoryResponse,
+    summary="Получить историю замеров телеметрии по VIN",
+    responses={
+        200: {
+            "description": "История замеров выбранного типа датчика, от новых к старым",
+            "content": {"application/json": {"example": {
+                "vin": "XTA12345678901231",
+                "sensor_type": "engine",
+                "readings": [{
+                    "id": 42,
+                    "vin": "XTA12345678901231",
+                    "sensor_type": "engine",
+                    "recorded_at": "2026-11-19T12:00:00Z",
+                    "data": {
+                        "parameter": "coolant_temp",
+                        "value": 92.0,
+                        "unit": "°C",
+                    },
+                }],
+            }}},
+        },
+        404: {"description": "Автомобиль с указанным VIN не зарегистрирован"},
+        422: {"description": "Некорректный VIN или тип датчика"},
+        503: {"description": "База данных временно недоступна"},
+    },
+)
+def get_telemetry_history(
+    vin: str = _vin_path(),
+    sensor_type: SensorType = Query(
+        ...,
+        description="Тип датчика: engine, electrical или obd",
+    ),
+    service: TelemetryService = Depends(get_telemetry_service),
+):
+    try:
+        return service.get_telemetry_history(vin, sensor_type)
     except VehicleNotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except TelemetryStorageError as e:
