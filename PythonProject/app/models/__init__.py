@@ -12,4 +12,7 @@ from app.models.telemetry import (
     ObdTelemetryResponse,
     EngineTelemetryData,
     ElectricalTelemetryData,
+    SensorType,
+    TelemetryReadingRecord,
+    TelemetryHistoryResponse,
 )

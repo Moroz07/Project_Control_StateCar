@@ -9,6 +9,8 @@ from app.models import (
     DtcEventRecord,
     ElectricalSensorPayload,
     EngineSensorPayload,
+    SensorType,
+    TelemetryReadingRecord,
     VehicleNormAndState,
 )
 from app.repositories.base import ITelemetryRepository
@@ -96,3 +98,69 @@ class TelemetryRepository(ITelemetryRepository):
                     return [DtcEventRecord(**row) for row in cur.fetchall()]
         except psycopg2.Error as exc:
             raise TelemetryStorageError("Не удалось прочитать коды OBD") from exc
+
+    def get_telemetry_readings(
+        self, vin: str, sensor_type: SensorType
+    ) -> List[TelemetryReadingRecord]:
+        try:
+            with psycopg2.connect(DBConnection.connection_string) as conn:
+                with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                    if sensor_type == SensorType.OBD:
+                        cur.execute(
+                            """
+                            SELECT id, vin, sensor_id, error_code, received_at
+                            FROM dtc_events
+                            WHERE vin = %s
+                            ORDER BY received_at DESC, id DESC;
+                            """,
+                            (vin,),
+                        )
+                        return [
+                            TelemetryReadingRecord(
+                                id=row["id"],
+                                vin=row["vin"].strip(),
+                                sensor_type=sensor_type,
+                                recorded_at=row["received_at"],
+                                data={
+                                    "sensor_id": row["sensor_id"],
+                                    "error_code": row["error_code"],
+                                },
+                            )
+                            for row in cur.fetchall()
+                        ]
+
+                    parameter_codes = {
+                        SensorType.ENGINE: (
+                            "engine_rpm", "coolant_temp", "oil_temp", "oil_pressure"
+                        ),
+                        SensorType.ELECTRICAL: (
+                            "battery_voltage", "current_mileage"
+                        ),
+                    }[sensor_type]
+                    cur.execute(
+                        """
+                        SELECT m.id, m.vin, t.parameter_code, t.unit,
+                               m.value, m.measured_at
+                        FROM measurements AS m
+                        JOIN thresholds AS t ON t.id = m.threshold_id
+                        WHERE m.vin = %s AND t.parameter_code = ANY(%s)
+                        ORDER BY m.measured_at DESC, m.id DESC;
+                        """,
+                        (vin, list(parameter_codes)),
+                    )
+                    return [
+                        TelemetryReadingRecord(
+                            id=row["id"],
+                            vin=row["vin"].strip(),
+                            sensor_type=sensor_type,
+                            recorded_at=row["measured_at"],
+                            data={
+                                "parameter": row["parameter_code"],
+                                "value": float(row["value"]),
+                                "unit": row["unit"],
+                            },
+                        )
+                        for row in cur.fetchall()
+                    ]
+        except psycopg2.Error as exc:
+            raise TelemetryStorageError("Не удалось прочитать историю телеметрии") from exc

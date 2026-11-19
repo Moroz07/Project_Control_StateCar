@@ -5,8 +5,14 @@ from fastapi.testclient import TestClient
 
 from app.api.dependencies import get_telemetry_service
 from app.errors import TelemetryStorageError
-from app.models import ElectricalSensorPayload, EngineSensorPayload, VehicleNormAndState
-from app.models import DtcEventRecord
+from app.models import (
+    DtcEventRecord,
+    ElectricalSensorPayload,
+    EngineSensorPayload,
+    SensorType,
+    TelemetryReadingRecord,
+    VehicleNormAndState,
+)
 from app.repositories import ITelemetryRepository
 from app.services import TelemetryService
 from main import app
@@ -32,6 +38,7 @@ class InMemoryTelemetryRepository(ITelemetryRepository):
         self.electrical_updates = []
         self.dtc_updates = []
         self.dtc_events = []
+        self.readings = []
         self.fail_engine_update = False
 
     def get_vehicle_norms(self, vin: str):
@@ -63,6 +70,16 @@ class InMemoryTelemetryRepository(ITelemetryRepository):
 
     def get_dtc_events(self, vin: str) -> list[DtcEventRecord]:
         return self.dtc_events
+
+    def get_telemetry_readings(
+        self, vin: str, sensor_type: SensorType
+    ) -> list[TelemetryReadingRecord]:
+        return [
+            record for record in sorted(
+                self.readings, key=lambda item: item.recorded_at, reverse=True
+            )
+            if record.vin == vin and record.sensor_type == sensor_type
+        ]
 
 
 @pytest.fixture
@@ -258,3 +275,72 @@ def test_sensor_get_endpoints_reject_unknown_vin(client):
     for sensor in ("engine", "electrical", "obd"):
         response = client.get(f"/api/telemetry/2HGCM82633A004352/{sensor}")
         assert response.status_code == 404
+
+
+@pytest.mark.parametrize("sensor_type", ["engine", "electrical", "obd"])
+def test_readings_endpoint_returns_history_for_sensor_type(
+    client, telemetry_repository, sensor_type
+):
+    reading_type = SensorType(sensor_type)
+    telemetry_repository.readings.extend([
+        TelemetryReadingRecord(
+            id=1,
+            vin=VIN,
+            sensor_type=reading_type,
+            recorded_at=datetime(2026, 11, 18, tzinfo=timezone.utc),
+            data={"parameter": "coolant_temp", "value": 90.0, "unit": "°C"},
+        ),
+        TelemetryReadingRecord(
+            id=2,
+            vin=VIN,
+            sensor_type=reading_type,
+            recorded_at=datetime(2026, 11, 19, tzinfo=timezone.utc),
+            data={"parameter": "coolant_temp", "value": 92.0, "unit": "°C"},
+        )
+    ])
+
+    response = client.get(
+        f"/api/telemetry/{VIN}/readings", params={"sensor_type": sensor_type}
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["sensor_type"] == sensor_type
+    assert len(data["readings"]) == 2
+    assert data["readings"][0]["data"]["parameter"] == "coolant_temp"
+    assert data["readings"][0]["data"]["value"] == 92.0
+    assert data["readings"][1]["data"]["value"] == 90.0
+
+
+def test_readings_endpoint_returns_empty_list_when_history_is_empty(client):
+    response = client.get(
+        f"/api/telemetry/{VIN}/readings", params={"sensor_type": "engine"}
+    )
+
+    assert response.status_code == 200
+    assert response.json()["readings"] == []
+
+
+def test_readings_endpoint_rejects_unknown_sensor_type(client):
+    response = client.get(
+        f"/api/telemetry/{VIN}/readings", params={"sensor_type": "chassis"}
+    )
+
+    assert response.status_code == 422
+
+
+def test_readings_endpoint_rejects_unknown_vin(client):
+    response = client.get(
+        "/api/telemetry/2HGCM82633A004352/readings",
+        params={"sensor_type": "engine"},
+    )
+
+    assert response.status_code == 404
+
+
+def test_readings_endpoint_rejects_invalid_vin(client):
+    response = client.get(
+        "/api/telemetry/not-a-vin/readings", params={"sensor_type": "engine"}
+    )
+
+    assert response.status_code == 422
