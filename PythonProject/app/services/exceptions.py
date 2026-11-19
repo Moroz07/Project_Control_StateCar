@@ -1,0 +1,4 @@
+class VehicleNotFoundError(Exception):
+    pass
+
+

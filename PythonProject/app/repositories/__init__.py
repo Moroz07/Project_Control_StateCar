@@ -1,0 +1,2 @@
+from app.repositories.base import ITelemetryRepository
+from app.repositories.telemetry_repository import TelemetryRepository
