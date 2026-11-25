@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using CarsharingClassLibrary.Models;
 using Npgsql;
 
 namespace ControlStateCar
@@ -347,6 +348,160 @@ namespace ControlStateCar
                 return false;
             }
         }
-    }
     
+
+    public List<RepairRequestHistoryItem> GetAllRequestHistory()
+        {
+            var items = new List<RepairRequestHistoryItem>();
+
+            try
+            {
+                var conn = DBConnection.GetOpenConnection();
+
+                string sql = @"
+                    SELECT
+                        h.id,
+                        h.request_id,
+                        h.changed_at,
+                        s.name,
+                        e.full_name,
+                        e.login,
+                        st.name,
+                        h.comment
+                    FROM status_history h
+                    LEFT JOIN statuses s ON h.status_id = s.id
+                    LEFT JOIN employees e ON h.employee_id = e.id
+                    LEFT JOIN service_types st ON h.service_type_id = st.id";
+
+                using (var cmd = new NpgsqlCommand(sql, conn))
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        string empFullName = reader.IsDBNull(4) ? "" : reader.GetString(4).Trim();
+                        string empLogin = reader.IsDBNull(5) ? "" : reader.GetString(5).Trim();
+
+                        string empDisplay;
+                        if (!string.IsNullOrEmpty(empFullName) && !string.IsNullOrEmpty(empLogin))
+                        {
+                            empDisplay = $"{empFullName} ({empLogin})";
+                        }
+                        else if (!string.IsNullOrEmpty(empFullName))
+                        {
+                            empDisplay = empFullName;
+                        }
+                        else if (!string.IsNullOrEmpty(empLogin))
+                        {
+                            empDisplay = empLogin;
+                        }
+                        else
+                        {
+                            empDisplay = "Не указан";
+                        }
+
+                        items.Add(new RepairRequestHistoryItem
+                        {
+                            Id = reader.GetInt32(0),
+                            RequestId = reader.IsDBNull(1) ? 0 : reader.GetInt32(1),
+                            ChangedAt = reader.IsDBNull(2) ? DateTime.MinValue : reader.GetDateTime(2),
+                            StatusName = reader.IsDBNull(3) ? "Изменение" : reader.GetString(3),
+                            EmployeeDisplay = empDisplay,
+                            ServiceTypeName = reader.IsDBNull(6) ? "" : reader.GetString(6),
+                            Comment = reader.IsDBNull(7) ? "" : reader.GetString(7)
+                        });
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                return new List<RepairRequestHistoryItem>();
+            }
+
+            return items;
+        }
+
+        public bool AddRequestHistory(int requestId, int? employeeId, string statusLabel, string comment, DateTime changedAt)
+        {
+            try
+            {
+                var conn = DBConnection.GetOpenConnection();
+
+                int? vehicleId = null;
+                string getReqSql = "SELECT vehicle_id, employee_id FROM repair_requests WHERE id = @requestId";
+                using (var getReqCmd = new NpgsqlCommand(getReqSql, conn))
+                {
+                    getReqCmd.Parameters.AddWithValue("@requestId", requestId);
+                    using (var reader = getReqCmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            if (!reader.IsDBNull(0))
+                            {
+                                vehicleId = reader.GetInt32(0);
+                            }
+                            if (!employeeId.HasValue && !reader.IsDBNull(1))
+                            {
+                                employeeId = reader.GetInt32(1);
+                            }
+                        }
+                    }
+                }
+
+                int? statusId = null;
+                string getStatusSql = "SELECT id, name FROM statuses";
+                using (var stCmd = new NpgsqlCommand(getStatusSql, conn))
+                using (var stReader = stCmd.ExecuteReader())
+                {
+                    int? fallbackId = null;
+                    string target = (statusLabel ?? "").Trim().ToLower();
+
+                    while (stReader.Read())
+                    {
+                        int id = stReader.GetInt32(0);
+                        string name = stReader.IsDBNull(1) ? "" : stReader.GetString(1).Trim().ToLower();
+
+                        if (!fallbackId.HasValue)
+                        {
+                            fallbackId = id;
+                        }
+
+                        if (!string.IsNullOrEmpty(target) &&
+                            (name == target ||
+                             (target.Contains("заверш") && (name.Contains("заверш") || name.Contains("closed") || name.Contains("completed"))) ||
+                             (target.Contains("дат") && (name.Contains("измен") || name.Contains("work") || name.Contains("progress")))))
+                        {
+                            statusId = id;
+                            break;
+                        }
+                    }
+
+                    if (!statusId.HasValue)
+                    {
+                        statusId = fallbackId;
+                    }
+                }
+
+                string insertSql = @"
+                    INSERT INTO status_history (vehicle_id, status_id, request_id, employee_id, comment, changed_at)
+                    VALUES (@vehicleId, @statusId, @requestId, @employeeId, @comment, @changedAt)";
+
+                using (var insCmd = new NpgsqlCommand(insertSql, conn))
+                {
+                    insCmd.Parameters.AddWithValue("@vehicleId", (object)vehicleId ?? DBNull.Value);
+                    insCmd.Parameters.AddWithValue("@statusId", (object)statusId ?? DBNull.Value);
+                    insCmd.Parameters.AddWithValue("@requestId", requestId);
+                    insCmd.Parameters.AddWithValue("@employeeId", (object)employeeId ?? DBNull.Value);
+                    insCmd.Parameters.AddWithValue("@comment", comment ?? "");
+                    insCmd.Parameters.AddWithValue("@changedAt", changedAt);
+
+                    return insCmd.ExecuteNonQuery() > 0;
+                }
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+    } 
 }

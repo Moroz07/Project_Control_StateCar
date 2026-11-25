@@ -164,7 +164,7 @@ namespace ControlStateCar
                 return;
             }
 
-            using (var detailsForm = new RepairRequestDetailsForm(details, model_))
+            using (var detailsForm = new RepairRequestDetailsForm(details, model_, currentUser_))
             {
                 if (detailsForm.ShowDialog() == DialogResult.OK)
                 {

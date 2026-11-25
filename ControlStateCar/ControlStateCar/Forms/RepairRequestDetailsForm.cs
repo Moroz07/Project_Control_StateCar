@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
+using CarsharingClassLibrary.Models;
 
 namespace ControlStateCar
 {
@@ -7,15 +8,97 @@ namespace ControlStateCar
     {
         private RepairRequestDetails details_;
         private RepairRequestsListModel model_;
+        private User currentUser_;
         private bool isModified_ = false;
 
-        public RepairRequestDetailsForm(RepairRequestDetails details, RepairRequestsListModel model = null)
+        public RepairRequestDetailsForm(RepairRequestDetails details, RepairRequestsListModel model = null, User currentUser = null)
         {
             InitializeComponent();
             details_ = details;
             model_ = model;
+            currentUser_ = currentUser;
 
+            SetupHistoryGrid();
             FillData();
+            BindHistoryGrid();
+        }
+
+        private void SetupHistoryGrid()
+        {
+            dgvHistory.AutoGenerateColumns = false;
+            dgvHistory.Columns.Clear();
+
+            dgvHistory.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                Name = "colHistDate",
+                HeaderText = "Дата и время",
+                DataPropertyName = "ChangedAtDisplay",
+                FillWeight = 110,
+                ReadOnly = true
+            });
+
+            dgvHistory.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                Name = "colHistStatus",
+                HeaderText = "Статус / Событие",
+                DataPropertyName = "StatusDisplay",
+                FillWeight = 115,
+                ReadOnly = true
+            });
+
+            dgvHistory.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                Name = "colHistEmployee",
+                HeaderText = "Сотрудник",
+                DataPropertyName = "EmployeeDisplay",
+                FillWeight = 140,
+                ReadOnly = true
+            });
+
+            dgvHistory.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                Name = "colHistComment",
+                HeaderText = "Комментарий / Выполненные работы",
+                DataPropertyName = "CommentDisplay",
+                FillWeight = 260,
+                ReadOnly = true
+            });
+        }
+
+        private void BindHistoryGrid()
+        {
+            if (model_ == null || details_ == null)
+            {
+                dgvHistory.DataSource = null;
+                return;
+            }
+
+            dgvHistory.DataSource = null;
+            dgvHistory.DataSource = model_.GetHistoryForGrid(details_.Id);
+        }
+
+        private int? GetCurrentEmployeeId()
+        {
+            if (currentUser_ == null)
+            {
+                return null;
+            }
+
+            try
+            {
+                var prop = currentUser_.GetType().GetProperty("Id");
+                if (prop != null && prop.PropertyType == typeof(int))
+                {
+                    int id = (int)prop.GetValue(currentUser_);
+                    return id > 0 ? (int?)id : null;
+                }
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+
+            return null;
         }
 
         private void FillData()
@@ -91,11 +174,7 @@ namespace ControlStateCar
             txtDescription.Text = details_.Description ?? "";
             txtWorkDone.Text = details_.WorkDone ?? "";
 
-            // Блокируем кнопку повторного закрытия, если заявка уже завершена или отменена
-            if (details_.Status == RepairStatus.Completed || details_.Status == RepairStatus.Cancelled)
-            {
-                btnCloseRequest.Enabled = false;
-            }
+            btnCloseRequest.Enabled = details_.Status != RepairStatus.Completed && details_.Status != RepairStatus.Cancelled;
         }
 
         private void btnCloseRequest_Click(object sender, EventArgs e)
@@ -107,8 +186,9 @@ namespace ControlStateCar
 
             DateTime closeDate = dtpClosedAt.Value;
             string workDoneText = txtWorkDone.Text;
+            int? empId = GetCurrentEmployeeId();
 
-            string error = model_.CloseRequest(details_.Id, workDoneText, closeDate);
+            string error = model_.CloseRequest(details_.Id, workDoneText, closeDate, empId);
             if (!string.IsNullOrEmpty(error))
             {
                 MessageBox.Show(error, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -121,6 +201,7 @@ namespace ControlStateCar
             isModified_ = true;
 
             FillData();
+            BindHistoryGrid();
             MessageBox.Show("Заявка успешно закрыта.", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
@@ -133,8 +214,9 @@ namespace ControlStateCar
 
             DateTime newCloseDate = dtpClosedAt.Value;
             string workDoneText = txtWorkDone.Text;
+            int? empId = GetCurrentEmployeeId();
 
-            string error = model_.UpdateRequestClosedDate(details_.Id, newCloseDate, workDoneText);
+            string error = model_.UpdateRequestClosedDate(details_.Id, newCloseDate, workDoneText, empId);
             if (!string.IsNullOrEmpty(error))
             {
                 MessageBox.Show(error, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -146,6 +228,7 @@ namespace ControlStateCar
             isModified_ = true;
 
             FillData();
+            BindHistoryGrid();
             MessageBox.Show("Дата закрытия успешно обновлена.", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 

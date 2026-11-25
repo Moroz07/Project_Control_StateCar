@@ -93,6 +93,8 @@
     <Compile Include="Models\RepairRequestDetails.cs" />
     <Compile Include="Models\RepairRequestFilterParameters.cs" />
     <Compile Include="Models\RepairRequestGridItem.cs" />
+    <Compile Include="Models\RepairRequestHistoryGridItem.cs" />
+    <Compile Include="Models\RepairRequestHistoryItem.cs" />
     <Compile Include="Models\RepairRequestsListModel.cs" />
     <Compile Include="Models\RepairStatus.cs" />
     <Compile Include="Views\IRepairRequestRepository.cs" />

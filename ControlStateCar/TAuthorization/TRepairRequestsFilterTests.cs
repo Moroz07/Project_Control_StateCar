@@ -8,7 +8,7 @@ using Moq;
 namespace TAuthorization
 {
     [TestClass]
-    public class RepairRequestsFilterTests
+    public class TRepairRequestsFilterTests
     {
         private List<RepairRequest> CreateSampleRequests()
         {

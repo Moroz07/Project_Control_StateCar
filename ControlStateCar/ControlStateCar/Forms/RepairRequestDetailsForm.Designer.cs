@@ -58,6 +58,11 @@
         private System.Windows.Forms.Label lblWorkDoneTitle;
         private System.Windows.Forms.TextBox txtWorkDone;
 
+        private System.Windows.Forms.Panel pnlHistoryCard;
+        private System.Windows.Forms.Panel pnlHistoryCardTop;
+        private System.Windows.Forms.Label lblHistoryCardTitle;
+        private System.Windows.Forms.DataGridView dgvHistory;
+
         private System.Windows.Forms.Panel pnlBottom;
         private System.Windows.Forms.Panel pnlBottomBorder;
         private System.Windows.Forms.Label lblNewCloseDate;
@@ -77,6 +82,10 @@
 
         private void InitializeComponent()
         {
+            System.Windows.Forms.DataGridViewCellStyle histHeaderStyle = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle histCellStyle = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle histAltStyle = new System.Windows.Forms.DataGridViewCellStyle();
+
             this.pnlHeader = new System.Windows.Forms.Panel();
             this.pnlHeaderAccent = new System.Windows.Forms.Panel();
             this.lblHeaderTitle = new System.Windows.Forms.Label();
@@ -131,6 +140,11 @@
             this.lblWorkDoneTitle = new System.Windows.Forms.Label();
             this.txtWorkDone = new System.Windows.Forms.TextBox();
 
+            this.pnlHistoryCard = new System.Windows.Forms.Panel();
+            this.pnlHistoryCardTop = new System.Windows.Forms.Panel();
+            this.lblHistoryCardTitle = new System.Windows.Forms.Label();
+            this.dgvHistory = new System.Windows.Forms.DataGridView();
+
             this.pnlBottom = new System.Windows.Forms.Panel();
             this.pnlBottomBorder = new System.Windows.Forms.Panel();
             this.lblNewCloseDate = new System.Windows.Forms.Label();
@@ -145,6 +159,8 @@
             this.pnlCustomerCard.SuspendLayout();
             this.pnlTechCard.SuspendLayout();
             this.pnlDescCard.SuspendLayout();
+            this.pnlHistoryCard.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvHistory)).BeginInit();
             this.pnlBottom.SuspendLayout();
             this.SuspendLayout();
 
@@ -158,33 +174,33 @@
             this.pnlHeader.Dock = System.Windows.Forms.DockStyle.Top;
             this.pnlHeader.Location = new System.Drawing.Point(0, 0);
             this.pnlHeader.Name = "pnlHeader";
-            this.pnlHeader.Size = new System.Drawing.Size(720, 68);
+            this.pnlHeader.Size = new System.Drawing.Size(740, 64);
             this.pnlHeader.TabIndex = 0;
 
             this.pnlHeaderAccent.BackColor = System.Drawing.Color.FromArgb(59, 130, 246);
             this.pnlHeaderAccent.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.pnlHeaderAccent.Location = new System.Drawing.Point(0, 65);
+            this.pnlHeaderAccent.Location = new System.Drawing.Point(0, 61);
             this.pnlHeaderAccent.Name = "pnlHeaderAccent";
-            this.pnlHeaderAccent.Size = new System.Drawing.Size(720, 3);
+            this.pnlHeaderAccent.Size = new System.Drawing.Size(740, 3);
 
             this.lblHeaderTitle.AutoSize = true;
-            this.lblHeaderTitle.Font = new System.Drawing.Font("Segoe UI", 13F, System.Drawing.FontStyle.Bold);
+            this.lblHeaderTitle.Font = new System.Drawing.Font("Segoe UI", 12.5F, System.Drawing.FontStyle.Bold);
             this.lblHeaderTitle.ForeColor = System.Drawing.Color.White;
-            this.lblHeaderTitle.Location = new System.Drawing.Point(22, 11);
+            this.lblHeaderTitle.Location = new System.Drawing.Point(20, 10);
             this.lblHeaderTitle.Name = "lblHeaderTitle";
-            this.lblHeaderTitle.Size = new System.Drawing.Size(172, 25);
+            this.lblHeaderTitle.Size = new System.Drawing.Size(172, 23);
             this.lblHeaderTitle.Text = "Карточка заявки №";
 
             this.lblHeaderSub.AutoSize = true;
             this.lblHeaderSub.Font = new System.Drawing.Font("Segoe UI", 8.5F);
             this.lblHeaderSub.ForeColor = System.Drawing.Color.FromArgb(96, 165, 250);
-            this.lblHeaderSub.Location = new System.Drawing.Point(24, 38);
+            this.lblHeaderSub.Location = new System.Drawing.Point(22, 36);
             this.lblHeaderSub.Name = "lblHeaderSub";
             this.lblHeaderSub.Size = new System.Drawing.Size(375, 15);
-            this.lblHeaderSub.Text = "Полная информация о заявке, автомобиле, заказчике и выполнении";
+            this.lblHeaderSub.Text = "Детальные сведения, выполнение работ и история изменений заявки";
 
             // 
-            // pnlRequestCard (Блок 1: Параметры заявки)
+            // pnlRequestCard
             // 
             this.pnlRequestCard.BackColor = System.Drawing.Color.White;
             this.pnlRequestCard.Controls.Add(this.txtClosedAt);
@@ -197,21 +213,21 @@
             this.pnlRequestCard.Controls.Add(this.lblRequestId);
             this.pnlRequestCard.Controls.Add(this.lblRequestCardTitle);
             this.pnlRequestCard.Controls.Add(this.pnlRequestCardTop);
-            this.pnlRequestCard.Location = new System.Drawing.Point(22, 82);
+            this.pnlRequestCard.Location = new System.Drawing.Point(20, 76);
             this.pnlRequestCard.Name = "pnlRequestCard";
-            this.pnlRequestCard.Size = new System.Drawing.Size(676, 90);
+            this.pnlRequestCard.Size = new System.Drawing.Size(700, 84);
             this.pnlRequestCard.TabIndex = 1;
 
             this.pnlRequestCardTop.BackColor = System.Drawing.Color.FromArgb(37, 99, 235);
             this.pnlRequestCardTop.Dock = System.Windows.Forms.DockStyle.Top;
             this.pnlRequestCardTop.Location = new System.Drawing.Point(0, 0);
             this.pnlRequestCardTop.Name = "pnlRequestCardTop";
-            this.pnlRequestCardTop.Size = new System.Drawing.Size(676, 3);
+            this.pnlRequestCardTop.Size = new System.Drawing.Size(700, 3);
 
             this.lblRequestCardTitle.AutoSize = true;
             this.lblRequestCardTitle.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Bold);
             this.lblRequestCardTitle.ForeColor = System.Drawing.Color.FromArgb(100, 116, 139);
-            this.lblRequestCardTitle.Location = new System.Drawing.Point(16, 10);
+            this.lblRequestCardTitle.Location = new System.Drawing.Point(14, 8);
             this.lblRequestCardTitle.Name = "lblRequestCardTitle";
             this.lblRequestCardTitle.Size = new System.Drawing.Size(128, 13);
             this.lblRequestCardTitle.Text = "ПАРАМЕТРЫ ЗАЯВКИ";
@@ -219,77 +235,77 @@
             this.lblRequestId.AutoSize = true;
             this.lblRequestId.Font = new System.Drawing.Font("Segoe UI", 8.5F);
             this.lblRequestId.ForeColor = System.Drawing.Color.FromArgb(71, 85, 105);
-            this.lblRequestId.Location = new System.Drawing.Point(16, 31);
+            this.lblRequestId.Location = new System.Drawing.Point(14, 27);
             this.lblRequestId.Name = "lblRequestId";
             this.lblRequestId.Size = new System.Drawing.Size(63, 15);
             this.lblRequestId.Text = "ID заявки:";
 
             this.txtRequestId.BackColor = System.Drawing.Color.FromArgb(248, 250, 252);
             this.txtRequestId.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtRequestId.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold);
+            this.txtRequestId.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.txtRequestId.ForeColor = System.Drawing.Color.FromArgb(15, 23, 42);
-            this.txtRequestId.Location = new System.Drawing.Point(16, 49);
+            this.txtRequestId.Location = new System.Drawing.Point(14, 45);
             this.txtRequestId.Name = "txtRequestId";
             this.txtRequestId.ReadOnly = true;
-            this.txtRequestId.Size = new System.Drawing.Size(95, 24);
+            this.txtRequestId.Size = new System.Drawing.Size(95, 23);
             this.txtRequestId.TabIndex = 0;
 
             this.lblStatus.AutoSize = true;
             this.lblStatus.Font = new System.Drawing.Font("Segoe UI", 8.5F);
             this.lblStatus.ForeColor = System.Drawing.Color.FromArgb(71, 85, 105);
-            this.lblStatus.Location = new System.Drawing.Point(125, 31);
+            this.lblStatus.Location = new System.Drawing.Point(123, 27);
             this.lblStatus.Name = "lblStatus";
             this.lblStatus.Size = new System.Drawing.Size(47, 15);
             this.lblStatus.Text = "Статус:";
 
             this.txtStatus.BackColor = System.Drawing.Color.FromArgb(248, 250, 252);
             this.txtStatus.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtStatus.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold);
+            this.txtStatus.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.txtStatus.ForeColor = System.Drawing.Color.FromArgb(37, 99, 235);
-            this.txtStatus.Location = new System.Drawing.Point(125, 49);
+            this.txtStatus.Location = new System.Drawing.Point(123, 45);
             this.txtStatus.Name = "txtStatus";
             this.txtStatus.ReadOnly = true;
-            this.txtStatus.Size = new System.Drawing.Size(160, 24);
+            this.txtStatus.Size = new System.Drawing.Size(160, 23);
             this.txtStatus.TabIndex = 1;
 
             this.lblCreatedAt.AutoSize = true;
             this.lblCreatedAt.Font = new System.Drawing.Font("Segoe UI", 8.5F);
             this.lblCreatedAt.ForeColor = System.Drawing.Color.FromArgb(71, 85, 105);
-            this.lblCreatedAt.Location = new System.Drawing.Point(300, 31);
+            this.lblCreatedAt.Location = new System.Drawing.Point(298, 27);
             this.lblCreatedAt.Name = "lblCreatedAt";
             this.lblCreatedAt.Size = new System.Drawing.Size(92, 15);
             this.lblCreatedAt.Text = "Дата создания:";
 
             this.txtCreatedAt.BackColor = System.Drawing.Color.FromArgb(248, 250, 252);
             this.txtCreatedAt.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtCreatedAt.Font = new System.Drawing.Font("Segoe UI", 9.5F);
+            this.txtCreatedAt.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.txtCreatedAt.ForeColor = System.Drawing.Color.FromArgb(15, 23, 42);
-            this.txtCreatedAt.Location = new System.Drawing.Point(300, 49);
+            this.txtCreatedAt.Location = new System.Drawing.Point(298, 45);
             this.txtCreatedAt.Name = "txtCreatedAt";
             this.txtCreatedAt.ReadOnly = true;
-            this.txtCreatedAt.Size = new System.Drawing.Size(175, 24);
+            this.txtCreatedAt.Size = new System.Drawing.Size(180, 23);
             this.txtCreatedAt.TabIndex = 2;
 
             this.lblClosedAt.AutoSize = true;
             this.lblClosedAt.Font = new System.Drawing.Font("Segoe UI", 8.5F);
             this.lblClosedAt.ForeColor = System.Drawing.Color.FromArgb(71, 85, 105);
-            this.lblClosedAt.Location = new System.Drawing.Point(489, 31);
+            this.lblClosedAt.Location = new System.Drawing.Point(492, 27);
             this.lblClosedAt.Name = "lblClosedAt";
             this.lblClosedAt.Size = new System.Drawing.Size(92, 15);
             this.lblClosedAt.Text = "Дата закрытия:";
 
             this.txtClosedAt.BackColor = System.Drawing.Color.FromArgb(248, 250, 252);
             this.txtClosedAt.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtClosedAt.Font = new System.Drawing.Font("Segoe UI", 9.5F);
+            this.txtClosedAt.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.txtClosedAt.ForeColor = System.Drawing.Color.FromArgb(15, 23, 42);
-            this.txtClosedAt.Location = new System.Drawing.Point(489, 49);
+            this.txtClosedAt.Location = new System.Drawing.Point(492, 45);
             this.txtClosedAt.Name = "txtClosedAt";
             this.txtClosedAt.ReadOnly = true;
-            this.txtClosedAt.Size = new System.Drawing.Size(171, 24);
+            this.txtClosedAt.Size = new System.Drawing.Size(192, 23);
             this.txtClosedAt.TabIndex = 3;
 
             // 
-            // pnlCarCard (Блок 2: Транспортное средство)
+            // pnlCarCard
             // 
             this.pnlCarCard.BackColor = System.Drawing.Color.White;
             this.pnlCarCard.Controls.Add(this.txtYear);
@@ -302,21 +318,21 @@
             this.pnlCarCard.Controls.Add(this.lblCarBrandModel);
             this.pnlCarCard.Controls.Add(this.lblCarCardTitle);
             this.pnlCarCard.Controls.Add(this.pnlCarCardTop);
-            this.pnlCarCard.Location = new System.Drawing.Point(22, 182);
+            this.pnlCarCard.Location = new System.Drawing.Point(20, 168);
             this.pnlCarCard.Name = "pnlCarCard";
-            this.pnlCarCard.Size = new System.Drawing.Size(676, 90);
+            this.pnlCarCard.Size = new System.Drawing.Size(700, 84);
             this.pnlCarCard.TabIndex = 2;
 
             this.pnlCarCardTop.BackColor = System.Drawing.Color.FromArgb(99, 102, 241);
             this.pnlCarCardTop.Dock = System.Windows.Forms.DockStyle.Top;
             this.pnlCarCardTop.Location = new System.Drawing.Point(0, 0);
             this.pnlCarCardTop.Name = "pnlCarCardTop";
-            this.pnlCarCardTop.Size = new System.Drawing.Size(676, 3);
+            this.pnlCarCardTop.Size = new System.Drawing.Size(700, 3);
 
             this.lblCarCardTitle.AutoSize = true;
             this.lblCarCardTitle.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Bold);
             this.lblCarCardTitle.ForeColor = System.Drawing.Color.FromArgb(100, 116, 139);
-            this.lblCarCardTitle.Location = new System.Drawing.Point(16, 10);
+            this.lblCarCardTitle.Location = new System.Drawing.Point(14, 8);
             this.lblCarCardTitle.Name = "lblCarCardTitle";
             this.lblCarCardTitle.Size = new System.Drawing.Size(159, 13);
             this.lblCarCardTitle.Text = "ТРАНСПОРТНОЕ СРЕДСТВО";
@@ -324,77 +340,77 @@
             this.lblCarBrandModel.AutoSize = true;
             this.lblCarBrandModel.Font = new System.Drawing.Font("Segoe UI", 8.5F);
             this.lblCarBrandModel.ForeColor = System.Drawing.Color.FromArgb(71, 85, 105);
-            this.lblCarBrandModel.Location = new System.Drawing.Point(16, 31);
+            this.lblCarBrandModel.Location = new System.Drawing.Point(14, 27);
             this.lblCarBrandModel.Name = "lblCarBrandModel";
             this.lblCarBrandModel.Size = new System.Drawing.Size(96, 15);
             this.lblCarBrandModel.Text = "Марка и модель:";
 
             this.txtCarBrandModel.BackColor = System.Drawing.Color.FromArgb(248, 250, 252);
             this.txtCarBrandModel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtCarBrandModel.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold);
+            this.txtCarBrandModel.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.txtCarBrandModel.ForeColor = System.Drawing.Color.FromArgb(15, 23, 42);
-            this.txtCarBrandModel.Location = new System.Drawing.Point(16, 49);
+            this.txtCarBrandModel.Location = new System.Drawing.Point(14, 45);
             this.txtCarBrandModel.Name = "txtCarBrandModel";
             this.txtCarBrandModel.ReadOnly = true;
-            this.txtCarBrandModel.Size = new System.Drawing.Size(185, 24);
+            this.txtCarBrandModel.Size = new System.Drawing.Size(190, 23);
             this.txtCarBrandModel.TabIndex = 0;
 
             this.lblCarNumber.AutoSize = true;
             this.lblCarNumber.Font = new System.Drawing.Font("Segoe UI", 8.5F);
             this.lblCarNumber.ForeColor = System.Drawing.Color.FromArgb(71, 85, 105);
-            this.lblCarNumber.Location = new System.Drawing.Point(215, 31);
+            this.lblCarNumber.Location = new System.Drawing.Point(218, 27);
             this.lblCarNumber.Name = "lblCarNumber";
             this.lblCarNumber.Size = new System.Drawing.Size(65, 15);
             this.lblCarNumber.Text = "Госномер:";
 
             this.txtCarNumber.BackColor = System.Drawing.Color.FromArgb(248, 250, 252);
             this.txtCarNumber.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtCarNumber.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold);
+            this.txtCarNumber.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.txtCarNumber.ForeColor = System.Drawing.Color.FromArgb(15, 23, 42);
-            this.txtCarNumber.Location = new System.Drawing.Point(215, 49);
+            this.txtCarNumber.Location = new System.Drawing.Point(218, 45);
             this.txtCarNumber.Name = "txtCarNumber";
             this.txtCarNumber.ReadOnly = true;
-            this.txtCarNumber.Size = new System.Drawing.Size(120, 24);
+            this.txtCarNumber.Size = new System.Drawing.Size(120, 23);
             this.txtCarNumber.TabIndex = 1;
 
             this.lblVin.AutoSize = true;
             this.lblVin.Font = new System.Drawing.Font("Segoe UI", 8.5F);
             this.lblVin.ForeColor = System.Drawing.Color.FromArgb(71, 85, 105);
-            this.lblVin.Location = new System.Drawing.Point(349, 31);
+            this.lblVin.Location = new System.Drawing.Point(352, 27);
             this.lblVin.Name = "lblVin";
             this.lblVin.Size = new System.Drawing.Size(67, 15);
             this.lblVin.Text = "VIN-номер:";
 
             this.txtVin.BackColor = System.Drawing.Color.FromArgb(248, 250, 252);
             this.txtVin.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtVin.Font = new System.Drawing.Font("Segoe UI", 9.5F);
+            this.txtVin.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.txtVin.ForeColor = System.Drawing.Color.FromArgb(15, 23, 42);
-            this.txtVin.Location = new System.Drawing.Point(349, 49);
+            this.txtVin.Location = new System.Drawing.Point(352, 45);
             this.txtVin.Name = "txtVin";
             this.txtVin.ReadOnly = true;
-            this.txtVin.Size = new System.Drawing.Size(205, 24);
+            this.txtVin.Size = new System.Drawing.Size(215, 23);
             this.txtVin.TabIndex = 2;
 
             this.lblYear.AutoSize = true;
             this.lblYear.Font = new System.Drawing.Font("Segoe UI", 8.5F);
             this.lblYear.ForeColor = System.Drawing.Color.FromArgb(71, 85, 105);
-            this.lblYear.Location = new System.Drawing.Point(568, 31);
+            this.lblYear.Location = new System.Drawing.Point(581, 27);
             this.lblYear.Name = "lblYear";
             this.lblYear.Size = new System.Drawing.Size(76, 15);
             this.lblYear.Text = "Год выпуска:";
 
             this.txtYear.BackColor = System.Drawing.Color.FromArgb(248, 250, 252);
             this.txtYear.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtYear.Font = new System.Drawing.Font("Segoe UI", 9.5F);
+            this.txtYear.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.txtYear.ForeColor = System.Drawing.Color.FromArgb(15, 23, 42);
-            this.txtYear.Location = new System.Drawing.Point(568, 49);
+            this.txtYear.Location = new System.Drawing.Point(581, 45);
             this.txtYear.Name = "txtYear";
             this.txtYear.ReadOnly = true;
-            this.txtYear.Size = new System.Drawing.Size(92, 24);
+            this.txtYear.Size = new System.Drawing.Size(103, 23);
             this.txtYear.TabIndex = 3;
 
             // 
-            // pnlCustomerCard (Блок 3: Информация о заказчике)
+            // pnlCustomerCard
             // 
             this.pnlCustomerCard.BackColor = System.Drawing.Color.White;
             this.pnlCustomerCard.Controls.Add(this.txtCustomerPhone);
@@ -403,21 +419,21 @@
             this.pnlCustomerCard.Controls.Add(this.lblCustomerName);
             this.pnlCustomerCard.Controls.Add(this.lblCustomerCardTitle);
             this.pnlCustomerCard.Controls.Add(this.pnlCustomerCardTop);
-            this.pnlCustomerCard.Location = new System.Drawing.Point(22, 282);
+            this.pnlCustomerCard.Location = new System.Drawing.Point(20, 260);
             this.pnlCustomerCard.Name = "pnlCustomerCard";
-            this.pnlCustomerCard.Size = new System.Drawing.Size(676, 90);
+            this.pnlCustomerCard.Size = new System.Drawing.Size(700, 84);
             this.pnlCustomerCard.TabIndex = 3;
 
             this.pnlCustomerCardTop.BackColor = System.Drawing.Color.FromArgb(16, 185, 129);
             this.pnlCustomerCardTop.Dock = System.Windows.Forms.DockStyle.Top;
             this.pnlCustomerCardTop.Location = new System.Drawing.Point(0, 0);
             this.pnlCustomerCardTop.Name = "pnlCustomerCardTop";
-            this.pnlCustomerCardTop.Size = new System.Drawing.Size(676, 3);
+            this.pnlCustomerCardTop.Size = new System.Drawing.Size(700, 3);
 
             this.lblCustomerCardTitle.AutoSize = true;
             this.lblCustomerCardTitle.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Bold);
             this.lblCustomerCardTitle.ForeColor = System.Drawing.Color.FromArgb(100, 116, 139);
-            this.lblCustomerCardTitle.Location = new System.Drawing.Point(16, 10);
+            this.lblCustomerCardTitle.Location = new System.Drawing.Point(14, 8);
             this.lblCustomerCardTitle.Name = "lblCustomerCardTitle";
             this.lblCustomerCardTitle.Size = new System.Drawing.Size(156, 13);
             this.lblCustomerCardTitle.Text = "ИНФОРМАЦИЯ О ЗАКАЗЧИКЕ";
@@ -425,41 +441,41 @@
             this.lblCustomerName.AutoSize = true;
             this.lblCustomerName.Font = new System.Drawing.Font("Segoe UI", 8.5F);
             this.lblCustomerName.ForeColor = System.Drawing.Color.FromArgb(71, 85, 105);
-            this.lblCustomerName.Location = new System.Drawing.Point(16, 31);
+            this.lblCustomerName.Location = new System.Drawing.Point(14, 27);
             this.lblCustomerName.Name = "lblCustomerName";
             this.lblCustomerName.Size = new System.Drawing.Size(151, 15);
             this.lblCustomerName.Text = "ФИО / Наименование:";
 
             this.txtCustomerName.BackColor = System.Drawing.Color.FromArgb(248, 250, 252);
             this.txtCustomerName.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtCustomerName.Font = new System.Drawing.Font("Segoe UI", 9.5F);
+            this.txtCustomerName.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.txtCustomerName.ForeColor = System.Drawing.Color.FromArgb(15, 23, 42);
-            this.txtCustomerName.Location = new System.Drawing.Point(16, 49);
+            this.txtCustomerName.Location = new System.Drawing.Point(14, 45);
             this.txtCustomerName.Name = "txtCustomerName";
             this.txtCustomerName.ReadOnly = true;
-            this.txtCustomerName.Size = new System.Drawing.Size(410, 24);
+            this.txtCustomerName.Size = new System.Drawing.Size(430, 23);
             this.txtCustomerName.TabIndex = 0;
 
             this.lblCustomerPhone.AutoSize = true;
             this.lblCustomerPhone.Font = new System.Drawing.Font("Segoe UI", 8.5F);
             this.lblCustomerPhone.ForeColor = System.Drawing.Color.FromArgb(71, 85, 105);
-            this.lblCustomerPhone.Location = new System.Drawing.Point(442, 31);
+            this.lblCustomerPhone.Location = new System.Drawing.Point(458, 27);
             this.lblCustomerPhone.Name = "lblCustomerPhone";
             this.lblCustomerPhone.Size = new System.Drawing.Size(123, 15);
             this.lblCustomerPhone.Text = "Контактный телефон:";
 
             this.txtCustomerPhone.BackColor = System.Drawing.Color.FromArgb(248, 250, 252);
             this.txtCustomerPhone.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtCustomerPhone.Font = new System.Drawing.Font("Segoe UI", 9.5F);
+            this.txtCustomerPhone.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.txtCustomerPhone.ForeColor = System.Drawing.Color.FromArgb(15, 23, 42);
-            this.txtCustomerPhone.Location = new System.Drawing.Point(442, 49);
+            this.txtCustomerPhone.Location = new System.Drawing.Point(458, 45);
             this.txtCustomerPhone.Name = "txtCustomerPhone";
             this.txtCustomerPhone.ReadOnly = true;
-            this.txtCustomerPhone.Size = new System.Drawing.Size(218, 24);
+            this.txtCustomerPhone.Size = new System.Drawing.Size(226, 23);
             this.txtCustomerPhone.TabIndex = 1;
 
             // 
-            // pnlTechCard (Блок 4: Ответственный специалист)
+            // pnlTechCard
             // 
             this.pnlTechCard.BackColor = System.Drawing.Color.White;
             this.pnlTechCard.Controls.Add(this.txtTechPhone);
@@ -470,21 +486,21 @@
             this.pnlTechCard.Controls.Add(this.lblTechFullName);
             this.pnlTechCard.Controls.Add(this.lblTechCardTitle);
             this.pnlTechCard.Controls.Add(this.pnlTechCardTop);
-            this.pnlTechCard.Location = new System.Drawing.Point(22, 382);
+            this.pnlTechCard.Location = new System.Drawing.Point(20, 352);
             this.pnlTechCard.Name = "pnlTechCard";
-            this.pnlTechCard.Size = new System.Drawing.Size(676, 90);
+            this.pnlTechCard.Size = new System.Drawing.Size(700, 84);
             this.pnlTechCard.TabIndex = 4;
 
             this.pnlTechCardTop.BackColor = System.Drawing.Color.FromArgb(14, 165, 233);
             this.pnlTechCardTop.Dock = System.Windows.Forms.DockStyle.Top;
             this.pnlTechCardTop.Location = new System.Drawing.Point(0, 0);
             this.pnlTechCardTop.Name = "pnlTechCardTop";
-            this.pnlTechCardTop.Size = new System.Drawing.Size(676, 3);
+            this.pnlTechCardTop.Size = new System.Drawing.Size(700, 3);
 
             this.lblTechCardTitle.AutoSize = true;
             this.lblTechCardTitle.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Bold);
             this.lblTechCardTitle.ForeColor = System.Drawing.Color.FromArgb(100, 116, 139);
-            this.lblTechCardTitle.Location = new System.Drawing.Point(16, 10);
+            this.lblTechCardTitle.Location = new System.Drawing.Point(14, 8);
             this.lblTechCardTitle.Name = "lblTechCardTitle";
             this.lblTechCardTitle.Size = new System.Drawing.Size(173, 13);
             this.lblTechCardTitle.Text = "ОТВЕТСТВЕННЫЙ СПЕЦИАЛИСТ";
@@ -492,59 +508,59 @@
             this.lblTechFullName.AutoSize = true;
             this.lblTechFullName.Font = new System.Drawing.Font("Segoe UI", 8.5F);
             this.lblTechFullName.ForeColor = System.Drawing.Color.FromArgb(71, 85, 105);
-            this.lblTechFullName.Location = new System.Drawing.Point(16, 31);
+            this.lblTechFullName.Location = new System.Drawing.Point(14, 27);
             this.lblTechFullName.Name = "lblTechFullName";
             this.lblTechFullName.Size = new System.Drawing.Size(87, 15);
             this.lblTechFullName.Text = "ФИО техника:";
 
             this.txtTechFullName.BackColor = System.Drawing.Color.FromArgb(248, 250, 252);
             this.txtTechFullName.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtTechFullName.Font = new System.Drawing.Font("Segoe UI", 9.5F);
+            this.txtTechFullName.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.txtTechFullName.ForeColor = System.Drawing.Color.FromArgb(15, 23, 42);
-            this.txtTechFullName.Location = new System.Drawing.Point(16, 49);
+            this.txtTechFullName.Location = new System.Drawing.Point(14, 45);
             this.txtTechFullName.Name = "txtTechFullName";
             this.txtTechFullName.ReadOnly = true;
-            this.txtTechFullName.Size = new System.Drawing.Size(290, 24);
+            this.txtTechFullName.Size = new System.Drawing.Size(300, 23);
             this.txtTechFullName.TabIndex = 0;
 
             this.lblTechLogin.AutoSize = true;
             this.lblTechLogin.Font = new System.Drawing.Font("Segoe UI", 8.5F);
             this.lblTechLogin.ForeColor = System.Drawing.Color.FromArgb(71, 85, 105);
-            this.lblTechLogin.Location = new System.Drawing.Point(320, 31);
+            this.lblTechLogin.Location = new System.Drawing.Point(328, 27);
             this.lblTechLogin.Name = "lblTechLogin";
             this.lblTechLogin.Size = new System.Drawing.Size(44, 15);
             this.lblTechLogin.Text = "Логин:";
 
             this.txtTechLogin.BackColor = System.Drawing.Color.FromArgb(248, 250, 252);
             this.txtTechLogin.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtTechLogin.Font = new System.Drawing.Font("Segoe UI", 9.5F);
+            this.txtTechLogin.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.txtTechLogin.ForeColor = System.Drawing.Color.FromArgb(15, 23, 42);
-            this.txtTechLogin.Location = new System.Drawing.Point(320, 49);
+            this.txtTechLogin.Location = new System.Drawing.Point(328, 45);
             this.txtTechLogin.Name = "txtTechLogin";
             this.txtTechLogin.ReadOnly = true;
-            this.txtTechLogin.Size = new System.Drawing.Size(150, 24);
+            this.txtTechLogin.Size = new System.Drawing.Size(155, 23);
             this.txtTechLogin.TabIndex = 1;
 
             this.lblTechPhone.AutoSize = true;
             this.lblTechPhone.Font = new System.Drawing.Font("Segoe UI", 8.5F);
             this.lblTechPhone.ForeColor = System.Drawing.Color.FromArgb(71, 85, 105);
-            this.lblTechPhone.Location = new System.Drawing.Point(484, 31);
+            this.lblTechPhone.Location = new System.Drawing.Point(497, 27);
             this.lblTechPhone.Name = "lblTechPhone";
             this.lblTechPhone.Size = new System.Drawing.Size(123, 15);
             this.lblTechPhone.Text = "Контактный телефон:";
 
             this.txtTechPhone.BackColor = System.Drawing.Color.FromArgb(248, 250, 252);
             this.txtTechPhone.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtTechPhone.Font = new System.Drawing.Font("Segoe UI", 9.5F);
+            this.txtTechPhone.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.txtTechPhone.ForeColor = System.Drawing.Color.FromArgb(15, 23, 42);
-            this.txtTechPhone.Location = new System.Drawing.Point(484, 49);
+            this.txtTechPhone.Location = new System.Drawing.Point(497, 45);
             this.txtTechPhone.Name = "txtTechPhone";
             this.txtTechPhone.ReadOnly = true;
-            this.txtTechPhone.Size = new System.Drawing.Size(176, 24);
+            this.txtTechPhone.Size = new System.Drawing.Size(187, 23);
             this.txtTechPhone.TabIndex = 2;
 
             // 
-            // pnlDescCard (Блок 5: Неисправность и выполненные работы)
+            // pnlDescCard
             // 
             this.pnlDescCard.BackColor = System.Drawing.Color.White;
             this.pnlDescCard.Controls.Add(this.txtWorkDone);
@@ -552,58 +568,121 @@
             this.pnlDescCard.Controls.Add(this.txtDescription);
             this.pnlDescCard.Controls.Add(this.lblDescCardTitle);
             this.pnlDescCard.Controls.Add(this.pnlDescCardTop);
-            this.pnlDescCard.Location = new System.Drawing.Point(22, 482);
+            this.pnlDescCard.Location = new System.Drawing.Point(20, 444);
             this.pnlDescCard.Name = "pnlDescCard";
-            this.pnlDescCard.Size = new System.Drawing.Size(676, 155);
+            this.pnlDescCard.Size = new System.Drawing.Size(700, 118);
             this.pnlDescCard.TabIndex = 5;
 
             this.pnlDescCardTop.BackColor = System.Drawing.Color.FromArgb(59, 130, 246);
             this.pnlDescCardTop.Dock = System.Windows.Forms.DockStyle.Top;
             this.pnlDescCardTop.Location = new System.Drawing.Point(0, 0);
             this.pnlDescCardTop.Name = "pnlDescCardTop";
-            this.pnlDescCardTop.Size = new System.Drawing.Size(676, 3);
+            this.pnlDescCardTop.Size = new System.Drawing.Size(700, 3);
 
             this.lblDescCardTitle.AutoSize = true;
             this.lblDescCardTitle.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Bold);
             this.lblDescCardTitle.ForeColor = System.Drawing.Color.FromArgb(100, 116, 139);
-            this.lblDescCardTitle.Location = new System.Drawing.Point(16, 10);
+            this.lblDescCardTitle.Location = new System.Drawing.Point(14, 8);
             this.lblDescCardTitle.Name = "lblDescCardTitle";
             this.lblDescCardTitle.Size = new System.Drawing.Size(163, 13);
             this.lblDescCardTitle.Text = "ОПИСАНИЕ НЕИСПРАВНОСТИ";
 
             this.txtDescription.BackColor = System.Drawing.Color.FromArgb(248, 250, 252);
             this.txtDescription.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtDescription.Font = new System.Drawing.Font("Segoe UI", 9.5F);
+            this.txtDescription.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.txtDescription.ForeColor = System.Drawing.Color.FromArgb(15, 23, 42);
-            this.txtDescription.Location = new System.Drawing.Point(16, 30);
+            this.txtDescription.Location = new System.Drawing.Point(14, 26);
             this.txtDescription.Multiline = true;
             this.txtDescription.Name = "txtDescription";
             this.txtDescription.ReadOnly = true;
             this.txtDescription.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtDescription.Size = new System.Drawing.Size(312, 110);
+            this.txtDescription.Size = new System.Drawing.Size(325, 80);
             this.txtDescription.TabIndex = 0;
 
             this.lblWorkDoneTitle.AutoSize = true;
             this.lblWorkDoneTitle.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Bold);
             this.lblWorkDoneTitle.ForeColor = System.Drawing.Color.FromArgb(37, 99, 235);
-            this.lblWorkDoneTitle.Location = new System.Drawing.Point(344, 10);
+            this.lblWorkDoneTitle.Location = new System.Drawing.Point(353, 8);
             this.lblWorkDoneTitle.Name = "lblWorkDoneTitle";
             this.lblWorkDoneTitle.Size = new System.Drawing.Size(218, 13);
             this.lblWorkDoneTitle.Text = "ВЫПОЛНЕННЫЕ РАБОТЫ (ОТЧЁТ ТЕХНИКА)";
 
             this.txtWorkDone.BackColor = System.Drawing.Color.White;
             this.txtWorkDone.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtWorkDone.Font = new System.Drawing.Font("Segoe UI", 9.5F);
+            this.txtWorkDone.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.txtWorkDone.ForeColor = System.Drawing.Color.FromArgb(15, 23, 42);
-            this.txtWorkDone.Location = new System.Drawing.Point(344, 30);
+            this.txtWorkDone.Location = new System.Drawing.Point(353, 26);
             this.txtWorkDone.Multiline = true;
             this.txtWorkDone.Name = "txtWorkDone";
             this.txtWorkDone.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtWorkDone.Size = new System.Drawing.Size(316, 110);
+            this.txtWorkDone.Size = new System.Drawing.Size(331, 80);
             this.txtWorkDone.TabIndex = 1;
 
             // 
-            // pnlBottom (Нижняя панель управления заявкой)
+            // pnlHistoryCard
+            // 
+            this.pnlHistoryCard.BackColor = System.Drawing.Color.White;
+            this.pnlHistoryCard.Controls.Add(this.dgvHistory);
+            this.pnlHistoryCard.Controls.Add(this.lblHistoryCardTitle);
+            this.pnlHistoryCard.Controls.Add(this.pnlHistoryCardTop);
+            this.pnlHistoryCard.Location = new System.Drawing.Point(20, 570);
+            this.pnlHistoryCard.Name = "pnlHistoryCard";
+            this.pnlHistoryCard.Size = new System.Drawing.Size(700, 150);
+            this.pnlHistoryCard.TabIndex = 6;
+
+            this.pnlHistoryCardTop.BackColor = System.Drawing.Color.FromArgb(30, 41, 59);
+            this.pnlHistoryCardTop.Dock = System.Windows.Forms.DockStyle.Top;
+            this.pnlHistoryCardTop.Location = new System.Drawing.Point(0, 0);
+            this.pnlHistoryCardTop.Name = "pnlHistoryCardTop";
+            this.pnlHistoryCardTop.Size = new System.Drawing.Size(700, 3);
+
+            this.lblHistoryCardTitle.AutoSize = true;
+            this.lblHistoryCardTitle.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Bold);
+            this.lblHistoryCardTitle.ForeColor = System.Drawing.Color.FromArgb(100, 116, 139);
+            this.lblHistoryCardTitle.Location = new System.Drawing.Point(14, 8);
+            this.lblHistoryCardTitle.Name = "lblHistoryCardTitle";
+            this.lblHistoryCardTitle.Size = new System.Drawing.Size(166, 13);
+            this.lblHistoryCardTitle.Text = "ИСТОРИЯ ИЗМЕНЕНИЙ ЗАЯВКИ";
+
+            this.dgvHistory.AllowUserToAddRows = false;
+            this.dgvHistory.AllowUserToDeleteRows = false;
+            this.dgvHistory.AllowUserToResizeRows = false;
+            histAltStyle.BackColor = System.Drawing.Color.FromArgb(248, 250, 252);
+            this.dgvHistory.AlternatingRowsDefaultCellStyle = histAltStyle;
+            this.dgvHistory.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.dgvHistory.BackgroundColor = System.Drawing.Color.White;
+            this.dgvHistory.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.dgvHistory.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.SingleHorizontal;
+            histHeaderStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            histHeaderStyle.BackColor = System.Drawing.Color.FromArgb(241, 245, 249);
+            histHeaderStyle.Font = new System.Drawing.Font("Segoe UI", 8.5F, System.Drawing.FontStyle.Bold);
+            histHeaderStyle.ForeColor = System.Drawing.Color.FromArgb(51, 65, 85);
+            histHeaderStyle.Padding = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.dgvHistory.ColumnHeadersDefaultCellStyle = histHeaderStyle;
+            this.dgvHistory.ColumnHeadersHeight = 28;
+            this.dgvHistory.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+            histCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            histCellStyle.BackColor = System.Drawing.Color.White;
+            histCellStyle.Font = new System.Drawing.Font("Segoe UI", 8.5F);
+            histCellStyle.ForeColor = System.Drawing.Color.FromArgb(15, 23, 42);
+            histCellStyle.Padding = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            histCellStyle.SelectionBackColor = System.Drawing.Color.FromArgb(219, 234, 254);
+            histCellStyle.SelectionForeColor = System.Drawing.Color.FromArgb(29, 78, 216);
+            this.dgvHistory.DefaultCellStyle = histCellStyle;
+            this.dgvHistory.EnableHeadersVisualStyles = false;
+            this.dgvHistory.GridColor = System.Drawing.Color.FromArgb(226, 232, 240);
+            this.dgvHistory.Location = new System.Drawing.Point(14, 26);
+            this.dgvHistory.MultiSelect = false;
+            this.dgvHistory.Name = "dgvHistory";
+            this.dgvHistory.ReadOnly = true;
+            this.dgvHistory.RowHeadersVisible = false;
+            this.dgvHistory.RowTemplate.Height = 26;
+            this.dgvHistory.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.dgvHistory.Size = new System.Drawing.Size(670, 112);
+            this.dgvHistory.TabIndex = 0;
+
+            // 
+            // pnlBottom
             // 
             this.pnlBottom.BackColor = System.Drawing.Color.FromArgb(248, 250, 252);
             this.pnlBottom.Controls.Add(this.btnClose);
@@ -613,21 +692,21 @@
             this.pnlBottom.Controls.Add(this.lblNewCloseDate);
             this.pnlBottom.Controls.Add(this.pnlBottomBorder);
             this.pnlBottom.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.pnlBottom.Location = new System.Drawing.Point(0, 650);
+            this.pnlBottom.Location = new System.Drawing.Point(0, 732);
             this.pnlBottom.Name = "pnlBottom";
-            this.pnlBottom.Size = new System.Drawing.Size(720, 72);
-            this.pnlBottom.TabIndex = 6;
+            this.pnlBottom.Size = new System.Drawing.Size(740, 68);
+            this.pnlBottom.TabIndex = 7;
 
             this.pnlBottomBorder.BackColor = System.Drawing.Color.FromArgb(226, 232, 240);
             this.pnlBottomBorder.Dock = System.Windows.Forms.DockStyle.Top;
             this.pnlBottomBorder.Location = new System.Drawing.Point(0, 0);
             this.pnlBottomBorder.Name = "pnlBottomBorder";
-            this.pnlBottomBorder.Size = new System.Drawing.Size(720, 1);
+            this.pnlBottomBorder.Size = new System.Drawing.Size(740, 1);
 
             this.lblNewCloseDate.AutoSize = true;
             this.lblNewCloseDate.Font = new System.Drawing.Font("Segoe UI", 8F);
             this.lblNewCloseDate.ForeColor = System.Drawing.Color.FromArgb(71, 85, 105);
-            this.lblNewCloseDate.Location = new System.Drawing.Point(22, 8);
+            this.lblNewCloseDate.Location = new System.Drawing.Point(20, 7);
             this.lblNewCloseDate.Name = "lblNewCloseDate";
             this.lblNewCloseDate.Size = new System.Drawing.Size(118, 13);
             this.lblNewCloseDate.Text = "Дата и время закрытия:";
@@ -635,7 +714,7 @@
             this.dtpClosedAt.CustomFormat = "dd.MM.yyyy HH:mm";
             this.dtpClosedAt.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.dtpClosedAt.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
-            this.dtpClosedAt.Location = new System.Drawing.Point(22, 26);
+            this.dtpClosedAt.Location = new System.Drawing.Point(20, 25);
             this.dtpClosedAt.Name = "dtpClosedAt";
             this.dtpClosedAt.Size = new System.Drawing.Size(145, 23);
             this.dtpClosedAt.TabIndex = 0;
@@ -646,9 +725,9 @@
             this.btnUpdateClosedDate.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnUpdateClosedDate.Font = new System.Drawing.Font("Segoe UI", 8.5F, System.Drawing.FontStyle.Bold);
             this.btnUpdateClosedDate.ForeColor = System.Drawing.Color.FromArgb(30, 41, 59);
-            this.btnUpdateClosedDate.Location = new System.Drawing.Point(175, 19);
+            this.btnUpdateClosedDate.Location = new System.Drawing.Point(173, 18);
             this.btnUpdateClosedDate.Name = "btnUpdateClosedDate";
-            this.btnUpdateClosedDate.Size = new System.Drawing.Size(175, 36);
+            this.btnUpdateClosedDate.Size = new System.Drawing.Size(180, 36);
             this.btnUpdateClosedDate.TabIndex = 1;
             this.btnUpdateClosedDate.Text = "Изменить дату закрытия";
             this.btnUpdateClosedDate.UseVisualStyleBackColor = false;
@@ -660,9 +739,9 @@
             this.btnCloseRequest.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnCloseRequest.Font = new System.Drawing.Font("Segoe UI", 8.5F, System.Drawing.FontStyle.Bold);
             this.btnCloseRequest.ForeColor = System.Drawing.Color.White;
-            this.btnCloseRequest.Location = new System.Drawing.Point(360, 19);
+            this.btnCloseRequest.Location = new System.Drawing.Point(361, 18);
             this.btnCloseRequest.Name = "btnCloseRequest";
-            this.btnCloseRequest.Size = new System.Drawing.Size(145, 36);
+            this.btnCloseRequest.Size = new System.Drawing.Size(150, 36);
             this.btnCloseRequest.TabIndex = 2;
             this.btnCloseRequest.Text = "Закрыть заявку";
             this.btnCloseRequest.UseVisualStyleBackColor = false;
@@ -676,9 +755,9 @@
             this.btnClose.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnClose.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.btnClose.ForeColor = System.Drawing.Color.White;
-            this.btnClose.Location = new System.Drawing.Point(578, 19);
+            this.btnClose.Location = new System.Drawing.Point(598, 18);
             this.btnClose.Name = "btnClose";
-            this.btnClose.Size = new System.Drawing.Size(120, 36);
+            this.btnClose.Size = new System.Drawing.Size(122, 36);
             this.btnClose.TabIndex = 3;
             this.btnClose.Text = "Выход";
             this.btnClose.UseVisualStyleBackColor = false;
@@ -691,8 +770,9 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(241, 245, 249);
             this.CancelButton = this.btnClose;
-            this.ClientSize = new System.Drawing.Size(720, 722);
+            this.ClientSize = new System.Drawing.Size(740, 800);
             this.Controls.Add(this.pnlBottom);
+            this.Controls.Add(this.pnlHistoryCard);
             this.Controls.Add(this.pnlDescCard);
             this.Controls.Add(this.pnlTechCard);
             this.Controls.Add(this.pnlCustomerCard);
@@ -717,6 +797,9 @@
             this.pnlTechCard.PerformLayout();
             this.pnlDescCard.ResumeLayout(false);
             this.pnlDescCard.PerformLayout();
+            this.pnlHistoryCard.ResumeLayout(false);
+            this.pnlHistoryCard.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvHistory)).EndInit();
             this.pnlBottom.ResumeLayout(false);
             this.pnlBottom.PerformLayout();
             this.ResumeLayout(false);

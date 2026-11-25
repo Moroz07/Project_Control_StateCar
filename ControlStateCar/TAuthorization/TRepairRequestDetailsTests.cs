@@ -7,7 +7,7 @@ using ControlStateCar;
 namespace TAuthorization
 {
     [TestClass]
-    public class RepairRequestDetailsTests
+    public class TRepairRequestDetailsTests
     {
         private List<RepairRequestDetails> CreateSampleDetailsList()
         {
