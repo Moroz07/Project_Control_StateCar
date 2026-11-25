@@ -15,10 +15,14 @@ namespace ControlStateCar
         public string Vin { get; set; }
         public int Year { get; set; }
 
+        public string CustomerName { get; set; }
+        public string CustomerPhone { get; set; }
+
         public string TechnicianLogin { get; set; }
         public string TechnicianFullName { get; set; }
         public string TechnicianPhone { get; set; }
 
         public string Description { get; set; }
+        public string WorkDone { get; set; }
     }
 }
