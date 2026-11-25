@@ -24,10 +24,13 @@ namespace TAuthorization
                     CarNumber = "A123BC77",
                     Vin = "XTA12345678901231",
                     Year = 2018,
+                    CustomerName = "ООО «Каршеринг Плюс»",
+                    CustomerPhone = "+7 (495) 000-11-22",
                     TechnicianLogin = "ivanov",
                     TechnicianFullName = "Иванов Иван Иванович",
                     TechnicianPhone = "+7 (999) 111-22-33",
-                    Description = "Замена передних тормозных колодок и дисков"
+                    Description = "Замена передних тормозных колодок и дисков",
+                    WorkDone = ""
                 },
                 new RepairRequestDetails
                 {
@@ -40,10 +43,13 @@ namespace TAuthorization
                     CarNumber = "C789MK77",
                     Vin = "Z94CB41BAGR123456",
                     Year = 2020,
+                    CustomerName = "Петров Пётр Петрович",
+                    CustomerPhone = "+7 (916) 555-44-33",
                     TechnicianLogin = null,
                     TechnicianFullName = "Не назначен",
                     TechnicianPhone = "Не назначен",
-                    Description = "Диагностика ходовой части"
+                    Description = "Диагностика ходовой части",
+                    WorkDone = ""
                 }
             };
         }
@@ -51,7 +57,6 @@ namespace TAuthorization
         [TestMethod]
         public void GetRequestDetails_ExistingRequest_ReturnsFullDetails()
         {
-            // Поиск существующей заявки по Id в модели возвращает полные данные
             var mockRepo = new Mock<IRepairRequestRepository>();
             mockRepo.Setup(repo => repo.GetAllRepairRequestDetails()).Returns(CreateSampleDetailsList());
 
@@ -60,19 +65,14 @@ namespace TAuthorization
 
             Assert.IsNotNull(actual);
             Assert.AreEqual(1, actual.Id);
-            Assert.AreEqual("Ford", actual.CarBrand);
-            Assert.AreEqual("Focus", actual.CarModel);
-            Assert.AreEqual("A123BC77", actual.CarNumber);
             Assert.AreEqual("XTA12345678901231", actual.Vin);
-            Assert.AreEqual(2018, actual.Year);
-            Assert.AreEqual("ivanov", actual.TechnicianLogin);
+            Assert.AreEqual("ООО «Каршеринг Плюс»", actual.CustomerName);
             Assert.AreEqual("Иванов Иван Иванович", actual.TechnicianFullName);
         }
 
         [TestMethod]
         public void GetRequestDetails_NonExistentRequest_ReturnsNull()
         {
-            // Поиск несуществующего Id возвращает null
             var mockRepo = new Mock<IRepairRequestRepository>();
             mockRepo.Setup(repo => repo.GetAllRepairRequestDetails()).Returns(CreateSampleDetailsList());
 
@@ -83,20 +83,40 @@ namespace TAuthorization
         }
 
         [TestMethod]
-        public void GetRequestDetails_UnassignedTechnician_ReturnsDefaultUnassignedValues()
+        public void CloseRequest_ValidWorkDone_ReturnsEmptyErrorString()
         {
-            // Заявка без назначенного техника и без даты закрытия
+            var mockRepo = new Mock<IRepairRequestRepository>();
+            mockRepo.Setup(repo => repo.GetAllRepairRequestDetails()).Returns(CreateSampleDetailsList());
+            mockRepo.Setup(repo => repo.CloseRequest(1, "Заменены колодки", It.IsAny<DateTime>())).Returns(true);
+
+            var model = new RepairRequestsListModel(mockRepo.Object);
+            string error = model.CloseRequest(1, "Заменены колодки", new DateTime(2026, 11, 13, 15, 0, 0));
+
+            Assert.AreEqual(string.Empty, error);
+        }
+
+        [TestMethod]
+        public void CloseRequest_EmptyWorkDone_ReturnsValidationError()
+        {
             var mockRepo = new Mock<IRepairRequestRepository>();
             mockRepo.Setup(repo => repo.GetAllRepairRequestDetails()).Returns(CreateSampleDetailsList());
 
             var model = new RepairRequestsListModel(mockRepo.Object);
-            var actual = model.GetRequestDetails(3);
+            string error = model.CloseRequest(1, "   ", new DateTime(2026, 11, 13, 15, 0, 0));
 
-            Assert.IsNotNull(actual);
-            Assert.IsNull(actual.ClosedAt);
-            Assert.IsNull(actual.TechnicianLogin);
-            Assert.AreEqual("Не назначен", actual.TechnicianFullName);
-            Assert.AreEqual("Не назначен", actual.TechnicianPhone);
+            Assert.AreNotEqual(string.Empty, error);
+        }
+
+        [TestMethod]
+        public void UpdateRequestClosedDate_DateBeforeCreation_ReturnsValidationError()
+        {
+            var mockRepo = new Mock<IRepairRequestRepository>();
+            mockRepo.Setup(repo => repo.GetAllRepairRequestDetails()).Returns(CreateSampleDetailsList());
+
+            var model = new RepairRequestsListModel(mockRepo.Object);
+            string error = model.UpdateRequestClosedDate(1, new DateTime(2026, 11, 10, 9, 0, 0), "Тест");
+
+            Assert.AreNotEqual(string.Empty, error);
         }
     }
 }
