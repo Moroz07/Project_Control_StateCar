@@ -6,6 +6,8 @@ namespace ControlStateCar
 {
     public class RepairRequestRepository : IRepairRequestRepository
     {
+
+
         public List<RepairRequest> GetAllRepairRequests()
         {
             var requests = new List<RepairRequest>();
@@ -166,7 +168,39 @@ namespace ControlStateCar
             }
         }
 
-            public List<RepairRequestDetails> GetAllRepairRequestDetails()
+        public List<string> GetAllTechnicianLogins()
+        {
+            var logins = new List<string>();
+
+            try
+            {
+                var conn = DBConnection.GetOpenConnection();
+                string sql = "SELECT login, role FROM employees";
+
+                using (var cmd = new NpgsqlCommand(sql, conn))
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        string login = reader.IsDBNull(0) ? "" : reader.GetString(0);
+                        string role = reader.IsDBNull(1) ? "" : reader.GetString(1).ToLower();
+
+                        if (login != "" && (role == "техник" || role == "technician"))
+                        {
+                            logins.Add(login);
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                return new List<string>();
+            }
+
+            return logins;
+        }
+
+        public List<RepairRequestDetails> GetAllRepairRequestDetails()
         {
             var detailsList = new List<RepairRequestDetails>();
 
@@ -181,6 +215,9 @@ namespace ControlStateCar
                         r.created_at,
                         r.closed_at,
                         r.description,
+                        r.customer_name,
+                        r.customer_phone,
+                        r.work_done,
                         v.brand,
                         v.model,
                         v.car_number,
@@ -230,25 +267,21 @@ namespace ControlStateCar
                                 break;
                         }
 
-                        if (!reader.IsDBNull(3))
-                        {
-                            details.ClosedAt = reader.GetDateTime(3);
-                        }
-                        else
-                        {
-                            details.ClosedAt = null;
-                        }
-
+                        details.ClosedAt = reader.IsDBNull(3) ? (DateTime?)null : reader.GetDateTime(3);
                         details.Description = reader.IsDBNull(4) ? "Описание отсутствует" : reader.GetString(4);
-                        details.CarBrand = reader.IsDBNull(5) ? "Не указана" : reader.GetString(5);
-                        details.CarModel = reader.IsDBNull(6) ? "" : reader.GetString(6);
-                        details.CarNumber = reader.IsDBNull(7) ? "Без номера" : reader.GetString(7);
-                        details.Vin = reader.IsDBNull(8) ? "Не указан" : reader.GetString(8);
-                        details.Year = reader.IsDBNull(9) ? 0 : Convert.ToInt32(reader.GetValue(9));
+                        details.CustomerName = reader.IsDBNull(5) ? "Не указан" : reader.GetString(5);
+                        details.CustomerPhone = reader.IsDBNull(6) ? "Не указан" : reader.GetString(6);
+                        details.WorkDone = reader.IsDBNull(7) ? "" : reader.GetString(7);
 
-                        details.TechnicianLogin = reader.IsDBNull(10) ? null : reader.GetString(10);
-                        details.TechnicianFullName = reader.IsDBNull(11) ? "Не назначен" : reader.GetString(11);
-                        details.TechnicianPhone = reader.IsDBNull(12) ? "Не назначен" : reader.GetString(12);
+                        details.CarBrand = reader.IsDBNull(8) ? "Не указана" : reader.GetString(8);
+                        details.CarModel = reader.IsDBNull(9) ? "" : reader.GetString(9);
+                        details.CarNumber = reader.IsDBNull(10) ? "Без номера" : reader.GetString(10);
+                        details.Vin = reader.IsDBNull(11) ? "Не указан" : reader.GetString(11);
+                        details.Year = reader.IsDBNull(12) ? 0 : Convert.ToInt32(reader.GetValue(12));
+
+                        details.TechnicianLogin = reader.IsDBNull(13) ? null : reader.GetString(13);
+                        details.TechnicianFullName = reader.IsDBNull(14) ? "Не назначен" : reader.GetString(14);
+                        details.TechnicianPhone = reader.IsDBNull(15) ? "Не назначен" : reader.GetString(15);
 
                         detailsList.Add(details);
                     }
@@ -260,6 +293,59 @@ namespace ControlStateCar
             }
 
             return detailsList;
+        }
+
+        public bool CloseRequest(int requestId, string workDone, DateTime closedAt)
+        {
+            try
+            {
+                var conn = DBConnection.GetOpenConnection();
+                string sql = @"
+                    UPDATE repair_requests 
+                    SET status = 'closed', 
+                        work_done = @workDone, 
+                        closed_at = @closedAt 
+                    WHERE id = @id";
+
+                using (var cmd = new NpgsqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@workDone", workDone ?? "");
+                    cmd.Parameters.AddWithValue("@closedAt", closedAt);
+                    cmd.Parameters.AddWithValue("@id", requestId);
+
+                    return cmd.ExecuteNonQuery() > 0;
+                }
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public bool UpdateClosedDate(int requestId, DateTime closedAt, string workDone)
+        {
+            try
+            {
+                var conn = DBConnection.GetOpenConnection();
+                string sql = @"
+                    UPDATE repair_requests 
+                    SET closed_at = @closedAt, 
+                        work_done = @workDone 
+                    WHERE id = @id";
+
+                using (var cmd = new NpgsqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@closedAt", closedAt);
+                    cmd.Parameters.AddWithValue("@workDone", workDone ?? "");
+                    cmd.Parameters.AddWithValue("@id", requestId);
+
+                    return cmd.ExecuteNonQuery() > 0;
+                }
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
     }
     
