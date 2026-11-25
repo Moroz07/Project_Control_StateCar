@@ -13,5 +13,7 @@ namespace ControlStateCar
         bool CancelRequest(int requestId, string technicianLogin);
         bool CloseRequest(int requestId, string workDone, DateTime closedAt);
         bool UpdateClosedDate(int requestId, DateTime closedAt, string workDone);
+        List<RepairRequestHistoryItem> GetAllRequestHistory();
+        bool AddRequestHistory(int requestId, int? employeeId, string statusLabel, string comment, DateTime changedAt);
     }
 }
