@@ -205,5 +205,120 @@ namespace ControlStateCar
 
             return null;
         }
+
+        public List<string> GetTechnicianLogins()
+        {
+            var logins = repository_.GetAllTechnicianLogins();
+            if (logins == null)
+            {
+                return new List<string>();
+            }
+
+            logins.Sort(StringComparer.OrdinalIgnoreCase);
+            return logins;
+        }
+
+        public List<RepairRequestGridItem> GetRequestsForGrid()
+        {
+            var gridItems = new List<RepairRequestGridItem>();
+            if (Requests == null)
+            {
+                return gridItems;
+            }
+
+            foreach (var req in Requests)
+            {
+                string statusText;
+                switch (req.Status)
+                {
+                    case RepairStatus.New:
+                        statusText = "новый";
+                        break;
+                    case RepairStatus.InProgress:
+                        statusText = "в работе";
+                        break;
+                    case RepairStatus.Completed:
+                        statusText = "завершён";
+                        break;
+                    case RepairStatus.Cancelled:
+                        statusText = "отменена";
+                        break;
+                    default:
+                        statusText = "новый";
+                        break;
+                }
+
+                string techText = string.IsNullOrWhiteSpace(req.TechnicianLogin)
+                    ? "Не назначен"
+                    : req.TechnicianLogin;
+
+                gridItems.Add(new RepairRequestGridItem
+                {
+                    Id = req.Id,
+                    CarNumber = req.CarNumber,
+                    Description = req.Description,
+                    StatusDisplay = statusText,
+                    CreatedAtDisplay = req.CreatedAt.ToString("dd.MM.yyyy HH:mm"),
+                    TechnicianDisplay = techText,
+                    TechnicianLogin = req.TechnicianLogin
+                });
+            }
+
+            return gridItems;
+        }
+
+        public string CloseRequest(int requestId, string workDone, DateTime closedAt)
+        {
+            if (requestId <= 0)
+            {
+                return "Некорректный идентификатор заявки.";
+            }
+
+            if (string.IsNullOrWhiteSpace(workDone))
+            {
+                return "Укажите описание выполненных работ перед закрытием заявки.";
+            }
+
+            var details = GetRequestDetails(requestId);
+            if (details == null)
+            {
+                return "Заявка не найдена.";
+            }
+
+            if (details.Status == RepairStatus.Cancelled)
+            {
+                return "Невозможно закрыть отменённую заявку.";
+            }
+
+            if (closedAt < details.CreatedAt)
+            {
+                return "Дата закрытия не может быть раньше даты создания заявки.";
+            }
+
+            bool updated = repository_.CloseRequest(requestId, workDone.Trim(), closedAt);
+            return updated ? string.Empty : "Не удалось закрыть заявку в базе данных.";
+        }
+
+        public string UpdateRequestClosedDate(int requestId, DateTime newClosedAt, string workDone)
+        {
+            if (requestId <= 0)
+            {
+                return "Некорректный идентификатор заявки.";
+            }
+
+            var details = GetRequestDetails(requestId);
+            if (details == null)
+            {
+                return "Заявка не найдена.";
+            }
+
+            if (newClosedAt < details.CreatedAt)
+            {
+                return "Дата закрытия не может быть раньше даты создания заявки.";
+            }
+
+            bool updated = repository_.UpdateClosedDate(requestId, newClosedAt, (workDone ?? "").Trim());
+            return updated ? string.Empty : "Не удалось обновить дату закрытия заявки.";
+        }
     }
 }
