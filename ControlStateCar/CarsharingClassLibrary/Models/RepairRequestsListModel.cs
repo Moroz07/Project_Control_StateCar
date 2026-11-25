@@ -320,5 +320,139 @@ namespace ControlStateCar
             bool updated = repository_.UpdateClosedDate(requestId, newClosedAt, (workDone ?? "").Trim());
             return updated ? string.Empty : "Не удалось обновить дату закрытия заявки.";
         }
+
+        public List<RepairRequestHistoryItem> GetRequestHistory(int requestId)
+        {
+            if (requestId <= 0)
+            {
+                return new List<RepairRequestHistoryItem>();
+            }
+
+            var allHistory = repository_.GetAllRequestHistory();
+            if (allHistory == null || allHistory.Count == 0)
+            {
+                return new List<RepairRequestHistoryItem>();
+            }
+
+            var filtered = new List<RepairRequestHistoryItem>();
+            foreach (var item in allHistory)
+            {
+                if (item != null && item.RequestId == requestId)
+                {
+                    filtered.Add(item);
+                }
+            }
+
+            filtered.Sort((a, b) => b.ChangedAt.CompareTo(a.ChangedAt));
+            return filtered;
+        }
+
+        public List<RepairRequestHistoryGridItem> GetHistoryForGrid(int requestId)
+        {
+            var historyList = GetRequestHistory(requestId);
+            var gridItems = new List<RepairRequestHistoryGridItem>();
+
+            foreach (var item in historyList)
+            {
+                string commentText = string.IsNullOrWhiteSpace(item.Comment)
+                    ? (string.IsNullOrWhiteSpace(item.ServiceTypeName) ? "—" : $"Вид работ: {item.ServiceTypeName}")
+                    : item.Comment.Trim();
+
+                gridItems.Add(new RepairRequestHistoryGridItem
+                {
+                    ChangedAtDisplay = item.ChangedAt > DateTime.MinValue
+                        ? item.ChangedAt.ToString("dd.MM.yyyy HH:mm")
+                        : "—",
+                    StatusDisplay = string.IsNullOrWhiteSpace(item.StatusName) ? "Изменение" : item.StatusName.Trim(),
+                    EmployeeDisplay = string.IsNullOrWhiteSpace(item.EmployeeDisplay) ? "Не указан" : item.EmployeeDisplay.Trim(),
+                    CommentDisplay = commentText
+                });
+            }
+
+            return gridItems;
+        }
+
+        public string CloseRequest(int requestId, string workDone, DateTime closedAt, int? employeeId = null)
+        {
+            if (requestId <= 0)
+            {
+                return "Некорректный идентификатор заявки.";
+            }
+
+            if (string.IsNullOrWhiteSpace(workDone))
+            {
+                return "Укажите описание выполненных работ перед закрытием заявки.";
+            }
+
+            var details = GetRequestDetails(requestId);
+            if (details == null)
+            {
+                return "Заявка не найдена.";
+            }
+
+            if (details.Status == RepairStatus.Cancelled)
+            {
+                return "Невозможно закрыть отменённую заявку.";
+            }
+
+            if (closedAt < details.CreatedAt)
+            {
+                return "Дата закрытия не может быть раньше даты создания заявки.";
+            }
+
+            bool updated = repository_.CloseRequest(requestId, workDone.Trim(), closedAt);
+            if (!updated)
+            {
+                return "Не удалось закрыть заявку в базе данных.";
+            }
+
+            repository_.AddRequestHistory(
+                requestId,
+                employeeId,
+                "завершён",
+                $"Заявка закрыта ({closedAt:dd.MM.yyyy HH:mm}). Выполненные работы: {workDone.Trim()}",
+                DateTime.Now);
+
+            return string.Empty;
+        }
+
+        public string UpdateRequestClosedDate(int requestId, DateTime newClosedAt, string workDone, int? employeeId = null)
+        {
+            if (requestId <= 0)
+            {
+                return "Некорректный идентификатор заявки.";
+            }
+
+            var details = GetRequestDetails(requestId);
+            if (details == null)
+            {
+                return "Заявка не найдена.";
+            }
+
+            if (newClosedAt < details.CreatedAt)
+            {
+                return "Дата закрытия не может быть раньше даты создания заявки.";
+            }
+
+            string cleanWorkDone = (workDone ?? "").Trim();
+            bool updated = repository_.UpdateClosedDate(requestId, newClosedAt, cleanWorkDone);
+            if (!updated)
+            {
+                return "Не удалось обновить дату закрытия заявки.";
+            }
+
+            string comment = string.IsNullOrEmpty(cleanWorkDone)
+                ? $"Изменена дата закрытия на {newClosedAt:dd.MM.yyyy HH:mm}"
+                : $"Изменена дата закрытия на {newClosedAt:dd.MM.yyyy HH:mm}. Комментарий: {cleanWorkDone}";
+
+            repository_.AddRequestHistory(
+                requestId,
+                employeeId,
+                "изменена дата закрытия",
+                comment,
+                DateTime.Now);
+
+            return string.Empty;
+        }
     }
 }
