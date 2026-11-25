@@ -1,11 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace ControlStateCar
@@ -13,11 +6,14 @@ namespace ControlStateCar
     public partial class RepairRequestDetailsForm : Form
     {
         private RepairRequestDetails details_;
+        private RepairRequestsListModel model_;
+        private bool isModified_ = false;
 
-        public RepairRequestDetailsForm(RepairRequestDetails details)
+        public RepairRequestDetailsForm(RepairRequestDetails details, RepairRequestsListModel model = null)
         {
             InitializeComponent();
             details_ = details;
+            model_ = model;
 
             FillData();
         }
@@ -39,10 +35,12 @@ namespace ControlStateCar
             if (details_.ClosedAt.HasValue)
             {
                 txtClosedAt.Text = details_.ClosedAt.Value.ToString("dd.MM.yyyy HH:mm");
+                dtpClosedAt.Value = details_.ClosedAt.Value;
             }
             else
             {
                 txtClosedAt.Text = "Не закрыта";
+                dtpClosedAt.Value = DateTime.Now;
             }
 
             switch (details_.Status)
@@ -71,7 +69,11 @@ namespace ControlStateCar
             txtVin.Text = details_.Vin ?? "Не указан";
             txtYear.Text = details_.Year > 0 ? details_.Year.ToString() : "Не указан";
 
-            // Блок 3: Ответственный специалист
+            // Блок 3: Заказчик
+            txtCustomerName.Text = string.IsNullOrWhiteSpace(details_.CustomerName) ? "Не указан" : details_.CustomerName;
+            txtCustomerPhone.Text = string.IsNullOrWhiteSpace(details_.CustomerPhone) ? "Не указан" : details_.CustomerPhone;
+
+            // Блок 4: Ответственный специалист
             if (details_.TechnicianLogin == null || details_.TechnicianLogin.Trim() == "")
             {
                 txtTechFullName.Text = "Не назначен";
@@ -85,12 +87,71 @@ namespace ControlStateCar
                 txtTechPhone.Text = details_.TechnicianPhone ?? "Не указан";
             }
 
-            // Блок 4: Описание неисправности
+            // Блок 5: Описание неисправности и выполненные работы
             txtDescription.Text = details_.Description ?? "";
+            txtWorkDone.Text = details_.WorkDone ?? "";
+
+            // Блокируем кнопку повторного закрытия, если заявка уже завершена или отменена
+            if (details_.Status == RepairStatus.Completed || details_.Status == RepairStatus.Cancelled)
+            {
+                btnCloseRequest.Enabled = false;
+            }
+        }
+
+        private void btnCloseRequest_Click(object sender, EventArgs e)
+        {
+            if (model_ == null || details_ == null)
+            {
+                return;
+            }
+
+            DateTime closeDate = dtpClosedAt.Value;
+            string workDoneText = txtWorkDone.Text;
+
+            string error = model_.CloseRequest(details_.Id, workDoneText, closeDate);
+            if (!string.IsNullOrEmpty(error))
+            {
+                MessageBox.Show(error, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            details_.Status = RepairStatus.Completed;
+            details_.ClosedAt = closeDate;
+            details_.WorkDone = workDoneText.Trim();
+            isModified_ = true;
+
+            FillData();
+            MessageBox.Show("Заявка успешно закрыта.", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void btnUpdateClosedDate_Click(object sender, EventArgs e)
+        {
+            if (model_ == null || details_ == null)
+            {
+                return;
+            }
+
+            DateTime newCloseDate = dtpClosedAt.Value;
+            string workDoneText = txtWorkDone.Text;
+
+            string error = model_.UpdateRequestClosedDate(details_.Id, newCloseDate, workDoneText);
+            if (!string.IsNullOrEmpty(error))
+            {
+                MessageBox.Show(error, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            details_.ClosedAt = newCloseDate;
+            details_.WorkDone = workDoneText.Trim();
+            isModified_ = true;
+
+            FillData();
+            MessageBox.Show("Дата закрытия успешно обновлена.", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void btnClose_Click(object sender, EventArgs e)
         {
+            this.DialogResult = isModified_ ? DialogResult.OK : DialogResult.Cancel;
             Close();
         }
     }

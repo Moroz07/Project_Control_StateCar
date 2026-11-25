@@ -1,15 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Windows.Forms;
 using CarsharingClassLibrary.Models;
-using Npgsql;
 
 namespace ControlStateCar
 {
     public partial class RepairRequestsForm : Form
     {
-        private  RepairRequestsListModel model_;
-        private  User currentUser_;
+        private RepairRequestsListModel model_;
+        private User currentUser_;
 
         public RepairRequestsForm(RepairRequestsListModel model, User currentUser = null)
         {
@@ -48,12 +46,14 @@ namespace ControlStateCar
 
         private void SetupDataGridView()
         {
+            dgvRequests.AutoGenerateColumns = false;
             dgvRequests.Columns.Clear();
 
             dgvRequests.Columns.Add(new DataGridViewTextBoxColumn
             {
                 Name = "colId",
                 HeaderText = "ID",
+                DataPropertyName = "Id",
                 FillWeight = 40,
                 ReadOnly = true
             });
@@ -62,6 +62,7 @@ namespace ControlStateCar
             {
                 Name = "colCarNumber",
                 HeaderText = "Госномер",
+                DataPropertyName = "CarNumber",
                 FillWeight = 85,
                 ReadOnly = true
             });
@@ -69,7 +70,8 @@ namespace ControlStateCar
             dgvRequests.Columns.Add(new DataGridViewTextBoxColumn
             {
                 Name = "colDescription",
-                HeaderText = "Описание неисправности (двойной клик для полного текста)",
+                HeaderText = "Описание неисправности (двойной клик для карточки)",
+                DataPropertyName = "Description",
                 FillWeight = 230,
                 ReadOnly = true
             });
@@ -78,6 +80,7 @@ namespace ControlStateCar
             {
                 Name = "colStatus",
                 HeaderText = "Статус",
+                DataPropertyName = "StatusDisplay",
                 FillWeight = 85,
                 ReadOnly = true
             });
@@ -86,6 +89,7 @@ namespace ControlStateCar
             {
                 Name = "colCreatedAt",
                 HeaderText = "Дата создания",
+                DataPropertyName = "CreatedAtDisplay",
                 FillWeight = 100,
                 ReadOnly = true
             });
@@ -94,6 +98,7 @@ namespace ControlStateCar
             {
                 Name = "colTechnician",
                 HeaderText = "Техник",
+                DataPropertyName = "TechnicianDisplay",
                 FillWeight = 90,
                 ReadOnly = true
             });
@@ -101,26 +106,10 @@ namespace ControlStateCar
 
         private void LoadTechniciansToComboBox()
         {
+            cmbAssignTech.DataSource = null;
             cmbAssignTech.Items.Clear();
-            var techLogins = new List<string>();
 
-            try
-            {
-                var conn = DBConnection.GetOpenConnection();
-                string sql = "SELECT login FROM employees WHERE role = 'техник' OR role = 'technician' ORDER BY full_name ASC";
-                using (var cmd = new NpgsqlCommand(sql, conn))
-                using (var reader = cmd.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        techLogins.Add(reader.GetString(0));
-                    }
-                }
-            }
-            catch (Exception)
-            {
-                // Игнорируем при отсутствии соединения
-            }
+            var techLogins = model_.GetTechnicianLogins();
 
             if (techLogins.Count > 0)
             {
@@ -141,61 +130,13 @@ namespace ControlStateCar
         private void LoadDefaultRequests()
         {
             model_.LoadRecentRequests(15);
-            DisplayRequests(model_.Requests);
+            BindGridDataSource();
         }
 
-        private void DisplayRequests(List<RepairRequest> requests)
+        private void BindGridDataSource()
         {
-            dgvRequests.Rows.Clear();
-
-            if (requests == null)
-            {
-                return;
-            }
-
-            foreach (var req in requests)
-            {
-                string statusDisplay;
-                switch (req.Status)
-                {
-                    case RepairStatus.New:
-                        statusDisplay = "новый";
-                        break;
-                    case RepairStatus.InProgress:
-                        statusDisplay = "в работе";
-                        break;
-                    case RepairStatus.Completed:
-                        statusDisplay = "завершён";
-                        break;
-                    case RepairStatus.Cancelled:
-                        statusDisplay = "отменена";
-                        break;
-                    default:
-                        statusDisplay = "новый";
-                        break;
-                }
-
-                string techDisplay;
-                if (req.TechnicianLogin == null || req.TechnicianLogin.Trim() == "")
-                {
-                    techDisplay = "Не назначен";
-                }
-                else
-                {
-                    techDisplay = req.TechnicianLogin;
-                }
-
-                int rowIndex = dgvRequests.Rows.Add(
-                    req.Id,
-                    req.CarNumber,
-                    req.Description,
-                    statusDisplay,
-                    req.CreatedAt.ToString("dd.MM.yyyy HH:mm"),
-                    techDisplay
-                );
-
-                dgvRequests.Rows[rowIndex].Tag = req;
-            }
+            dgvRequests.DataSource = null;
+            dgvRequests.DataSource = model_.GetRequestsForGrid();
         }
 
         private void dgvRequests_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
@@ -205,13 +146,13 @@ namespace ControlStateCar
                 return;
             }
 
-            var req = dgvRequests.Rows[e.RowIndex].Tag as RepairRequest;
-            if (req == null)
+            var item = dgvRequests.Rows[e.RowIndex].DataBoundItem as RepairRequestGridItem;
+            if (item == null)
             {
                 return;
             }
 
-            var details = model_.GetRequestDetails(req.Id);
+            var details = model_.GetRequestDetails(item.Id);
             if (details == null)
             {
                 MessageBox.Show(
@@ -223,9 +164,12 @@ namespace ControlStateCar
                 return;
             }
 
-            using (var detailsForm = new RepairRequestDetailsForm(details))
+            using (var detailsForm = new RepairRequestDetailsForm(details, model_))
             {
-                detailsForm.ShowDialog();
+                if (detailsForm.ShowDialog() == DialogResult.OK)
+                {
+                    LoadDefaultRequests();
+                }
             }
         }
 
@@ -237,8 +181,8 @@ namespace ControlStateCar
                 return;
             }
 
-            var request = dgvRequests.SelectedRows[0].Tag as RepairRequest;
-            if (request == null)
+            var item = dgvRequests.SelectedRows[0].DataBoundItem as RepairRequestGridItem;
+            if (item == null)
             {
                 return;
             }
@@ -249,7 +193,7 @@ namespace ControlStateCar
                 selectedTechnician = cmbAssignTech.SelectedItem.ToString();
             }
 
-            string errorMessage = model_.AssignTechnicianToRequest(request.Id, selectedTechnician);
+            string errorMessage = model_.AssignTechnicianToRequest(item.Id, selectedTechnician);
 
             if (errorMessage == null || errorMessage.Trim() == "")
             {
@@ -270,8 +214,8 @@ namespace ControlStateCar
                 return;
             }
 
-            var request = dgvRequests.SelectedRows[0].Tag as RepairRequest;
-            if (request == null)
+            var item = dgvRequests.SelectedRows[0].DataBoundItem as RepairRequestGridItem;
+            if (item == null)
             {
                 return;
             }
@@ -280,7 +224,7 @@ namespace ControlStateCar
             {
                 if (currentUser_.Role == Role.техник)
                 {
-                    if (request.TechnicianLogin != currentUser_.Login)
+                    if (item.TechnicianLogin != currentUser_.Login)
                     {
                         MessageBox.Show("Вы можете отменять только те заявки, которые назначены на вас.", "Доступ запрещен", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         return;
@@ -288,7 +232,7 @@ namespace ControlStateCar
                 }
             }
 
-            string errorMessage = model_.CancelRequest(request.Id);
+            string errorMessage = model_.CancelRequest(item.Id);
 
             if (errorMessage == null || errorMessage.Trim() == "")
             {
@@ -341,7 +285,7 @@ namespace ControlStateCar
             }
 
             string resultMessage = model_.ApplyFilter(filterParams);
-            DisplayRequests(model_.Requests);
+            BindGridDataSource();
 
             if (resultMessage != null && resultMessage.Trim() != "")
             {
