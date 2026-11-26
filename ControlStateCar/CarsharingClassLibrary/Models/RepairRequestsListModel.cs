@@ -267,60 +267,6 @@ namespace ControlStateCar
             return gridItems;
         }
 
-        public string CloseRequest(int requestId, string workDone, DateTime closedAt)
-        {
-            if (requestId <= 0)
-            {
-                return "Некорректный идентификатор заявки.";
-            }
-
-            if (string.IsNullOrWhiteSpace(workDone))
-            {
-                return "Укажите описание выполненных работ перед закрытием заявки.";
-            }
-
-            var details = GetRequestDetails(requestId);
-            if (details == null)
-            {
-                return "Заявка не найдена.";
-            }
-
-            if (details.Status == RepairStatus.Cancelled)
-            {
-                return "Невозможно закрыть отменённую заявку.";
-            }
-
-            if (closedAt < details.CreatedAt)
-            {
-                return "Дата закрытия не может быть раньше даты создания заявки.";
-            }
-
-            bool updated = repository_.CloseRequest(requestId, workDone.Trim(), closedAt);
-            return updated ? string.Empty : "Не удалось закрыть заявку в базе данных.";
-        }
-
-        public string UpdateRequestClosedDate(int requestId, DateTime newClosedAt, string workDone)
-        {
-            if (requestId <= 0)
-            {
-                return "Некорректный идентификатор заявки.";
-            }
-
-            var details = GetRequestDetails(requestId);
-            if (details == null)
-            {
-                return "Заявка не найдена.";
-            }
-
-            if (newClosedAt < details.CreatedAt)
-            {
-                return "Дата закрытия не может быть раньше даты создания заявки.";
-            }
-
-            bool updated = repository_.UpdateClosedDate(requestId, newClosedAt, (workDone ?? "").Trim());
-            return updated ? string.Empty : "Не удалось обновить дату закрытия заявки.";
-        }
-
         public List<RepairRequestHistoryItem> GetRequestHistory(int requestId)
         {
             if (requestId <= 0)
@@ -388,6 +334,16 @@ namespace ControlStateCar
             if (details == null)
             {
                 return "Заявка не найдена.";
+            }
+
+            if (details.Status == RepairStatus.New)
+            {
+                return "Невозможно закрыть новую заявку. Сначала переведите заявку в работу.";
+            }
+
+            if (details.Status == RepairStatus.Completed)
+            {
+                return "Заявка уже закрыта.";
             }
 
             if (details.Status == RepairStatus.Cancelled)

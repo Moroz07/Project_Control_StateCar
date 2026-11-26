@@ -174,7 +174,7 @@ namespace ControlStateCar
             txtDescription.Text = details_.Description ?? "";
             txtWorkDone.Text = details_.WorkDone ?? "";
 
-            btnCloseRequest.Enabled = details_.Status != RepairStatus.Completed && details_.Status != RepairStatus.Cancelled;
+            btnCloseRequest.Enabled = details_.Status == RepairStatus.InProgress;
         }
 
         private void btnCloseRequest_Click(object sender, EventArgs e)
@@ -234,7 +234,7 @@ namespace ControlStateCar
 
         private void btnClose_Click(object sender, EventArgs e)
         {
-            this.DialogResult = isModified_ ? DialogResult.OK : DialogResult.Cancel;
+            DialogResult = isModified_ ? DialogResult.OK : DialogResult.Cancel;
             Close();
         }
     }
